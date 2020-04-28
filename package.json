@@ -1,0 +1,12 @@
+{
+    "name": "com.utj.screenshot2profiler",
+    "displayName": "Screenshot to Profiler",
+    "version": "0.1.0",
+    "unity": "2019.1",
+    "description": "Embedded screenshot to profiler data",
+    "keywords": [
+        "profiler"
+    ],
+    "category": "profiler",
+    "dependencies": {}
+}

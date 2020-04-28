@@ -1,0 +1,17 @@
+{
+    "name": "UTJ.SS2Profiler.Editor",
+    "references": [
+        "GUID:3db63a1584877264096a156196217854"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
