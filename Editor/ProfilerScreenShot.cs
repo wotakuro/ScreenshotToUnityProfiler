@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using UnityEditor.Profiling;
+using Unity.Collections;
+using UnityEditorInternal;
 
 namespace UTJ.SS2Profiler
 {
@@ -17,34 +20,54 @@ namespace UTJ.SS2Profiler
 
         private void OnEnable()
         {
-            var bytes = System.IO.File.ReadAllBytes("test-0.data");
-            var colors = new Color[bytes.Length/4];
+            Reflesh(ProfilerDriver.firstFrameIndex);
+        }
+
+        private void Reflesh(int frameIdx)
+        {
+
+            HierarchyFrameDataView hierarchyFrameDataView =
+                ProfilerDriver.GetHierarchyFrameDataView(frameIdx, 0, HierarchyFrameDataView.ViewModes.Default, 0, false); ;
 
 
-            drawTexture = new Texture2D(192, 128,TextureFormat.ARGB32,false);
-            //            drawTexture.LoadRawTextureData(bytes);
-            for( int i = 0; i < colors.Length; ++i)
-            {
-                colors[i].b = bytes[i * 4 + 0] / 255.0f;
-                colors[i].g = bytes[i * 4 + 1] / 255.0f;
-                colors[i].r = bytes[i * 4 + 2] / 255.0f;
-                colors[i].a = bytes[i * 4 + 3] / 255.0f;
-            }
+            NativeArray<byte> bytes =
+                hierarchyFrameDataView.GetFrameMetaData<byte>(ScreenShotToProfiler.imageBinary, 0);
 
-            drawTexture.SetPixelData(colors, 0);
+
+            drawTexture = new Texture2D(192, 128, TextureFormat.RGBA32, false);
+            drawTexture.LoadRawTextureData(bytes);
             drawTexture.Apply();
         }
 
         private void OnGUI()
         {
-            var rect = new Rect(10, 10, 192, 128);
-            EditorGUI.DrawTextureTransparent(rect, this.drawTexture);
-            if(RenderTextureBuffer.dbg != null)
-            {
-                rect.y += 150;
-                EditorGUI.DrawTextureTransparent(rect, this.drawTexture);
 
+            var rect = new Rect(10, 10, 192, 128);
+            EditorGUI.LabelField(rect, new GUIContent(this.drawTexture));
+        }
+
+        private int GetProfilerActiveFrame()
+        {
+            var window = GetProfilerWindow();
+            if (window == null)
+            {
+                Reflesh(ProfilerDriver.firstFrameIndex);
             }
+            return 0;
+        }
+        private static EditorWindow GetProfilerWindow()
+        {
+            EditorWindow profilerWindow = null;
+
+            EditorWindow[] windows = Resources.FindObjectsOfTypeAll<EditorWindow>();
+            if (windows != null && windows.Length > 0)
+            {
+                foreach (var window in windows)
+                    if (window.GetType().Name == "ProfilerWindow")
+                        profilerWindow = window;
+            }
+            return profilerWindow;
+
         }
     }
 }
