@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.UI;
 
 namespace UTJ.SS2Profiler
 {
@@ -17,8 +18,15 @@ namespace UTJ.SS2Profiler
         {
             this.flipMesh = CreateMesh(true);
             this.normalMesh = CreateMesh(false);
-            this.drawMaterial = new Material(Shader.Find("Unlit/Texture"));
+            this.InitMaterial();
         }
+
+        private void InitMaterial()
+        {
+            this.drawMaterial = new Material(Shader.Find("Unlit/Texture"));
+
+        }
+
         private Mesh CreateMesh(bool flip)
         {
             var vertices = new Vector3[] {
@@ -67,6 +75,17 @@ namespace UTJ.SS2Profiler
         {
             if (flag == this.isFlipY) { return; }
             this.isFlipY = flag;
+            if ( this.drawTexture == null)
+            {
+                return; 
+            }
+
+            var tmpRt = RenderTexture.GetTemporary(this.drawTexture.descriptor);
+            CommandBuffer cmd = new CommandBuffer();
+            cmd.CopyTexture(this.drawTexture, tmpRt);
+            Graphics.ExecuteCommandBuffer(cmd);
+            this.DrawTextureToRt(tmpRt, true);
+            RenderTexture.ReleaseTemporary(tmpRt);
         }
 
         public void SetupToRenderTexture(Texture tex)
@@ -99,6 +118,19 @@ namespace UTJ.SS2Profiler
 
         private void DrawTextureToRt(Texture tex, bool flip)
         {
+            if( tex == null) { return; }
+            if(!this.drawMaterial)
+            {
+                InitMaterial();
+            }
+            if (!this.flipMesh)
+            {
+                this.flipMesh = CreateMesh(true);
+            }
+            if (!this.normalMesh)
+            {
+                this.normalMesh = CreateMesh(false);
+            }
             // draw
             this.drawMaterial.mainTexture = tex;
 

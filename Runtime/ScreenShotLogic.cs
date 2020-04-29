@@ -1,16 +1,17 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
-using Unity.Collections;
 using UnityEngine.Profiling;
 
+#if DEBUG
 namespace UTJ.SS2Profiler
 {
+
     internal class ScreenShotLogic : System.IDisposable
     {
 
-        public const int FRAME_NUM = 8;
+        private const int FRAME_NUM = 8;
+        private const string CAPTURE_CMD_SAMPLE = "ScreenToRt";
 
         private struct DataInfo
         {
@@ -28,6 +29,7 @@ namespace UTJ.SS2Profiler
         private Queue<RequestInfo> requests = new Queue<RequestInfo>();
         private DataInfo[] frames;
         private byte[] tagInfo;
+        private CommandBuffer commandBuffer;
 
         public ScreenShotLogic(int width , int height)
         {
@@ -40,16 +42,21 @@ namespace UTJ.SS2Profiler
                 frames[i].fromEnd = 5;
             }
             this.tagInfo = new byte[12];
-            this.WriteToTagInfo(width, 1);
-            this.WriteToTagInfo(height, 2);
+            this.WriteToTagInfoShort(width, 4);
+            this.WriteToTagInfoShort(height, 6);
         }
 
         private void WriteToTagInfo(int val,int idx)
         {
-            tagInfo[idx * 4 + 0] = (byte)((val >> 0 )& 0xff);
-            tagInfo[idx * 4 + 1] = (byte)((val >> 8 ) & 0xff);
-            tagInfo[idx * 4 + 2] = (byte)((val >> 16) & 0xff);
-            tagInfo[idx * 4 + 3] = (byte)((val >> 24) & 0xff);
+            tagInfo[idx + 0] = (byte)((val >> 0 )& 0xff);
+            tagInfo[idx + 1] = (byte)((val >> 8 ) & 0xff);
+            tagInfo[idx + 2] = (byte)((val >> 16) & 0xff);
+            tagInfo[idx + 3] = (byte)((val >> 24) & 0xff);
+        }
+        private void WriteToTagInfoShort(int val, int idx)
+        {
+            tagInfo[idx  + 0] = (byte)((val >> 0) & 0xff);
+            tagInfo[idx  + 1] = (byte)((val >> 8) & 0xff);
         }
 
         public void Dispose()
@@ -124,7 +131,13 @@ namespace UTJ.SS2Profiler
         }
 
         public int CaptureScreen(int id)
-        {
+        { 
+            if(commandBuffer == null) { 
+                commandBuffer = new CommandBuffer();
+                commandBuffer.name = "ScreenCapture";
+            }
+            commandBuffer.Clear();
+
             for (int i = 0; i < FRAME_NUM; ++i)
             {
                 if (!IsAvailable(i))
@@ -133,13 +146,17 @@ namespace UTJ.SS2Profiler
                 }
                 frames[i].id = id;
                 this.WriteToTagInfo(id, 0);
+                this.WriteToTagInfoShort(Screen.width, 8);
+                this.WriteToTagInfoShort(Screen.height, 10);
                 Profiler.EmitFrameMetaData(ScreenShotToProfiler.MetadataGuid, ScreenShotToProfiler.InfoTag, tagInfo);
                 var rt = RenderTexture.GetTemporary(Screen.width, Screen.height, 0, RenderTextureFormat.ARGB32);                
                 ScreenCapture.CaptureScreenshotIntoRenderTexture(rt);
-                CommandBuffer cmd = new CommandBuffer();
-                cmd.Blit(rt, frames[i].renderTexture);
-                Graphics.ExecuteCommandBuffer(cmd);
+                commandBuffer.BeginSample(CAPTURE_CMD_SAMPLE);
+                commandBuffer.Blit(rt, frames[i].renderTexture);
+                commandBuffer.EndSample(CAPTURE_CMD_SAMPLE);
+                Graphics.ExecuteCommandBuffer(commandBuffer);
                 RenderTexture.ReleaseTemporary(rt);
+                commandBuffer.Clear();
                 return i;
             }
             return -1;
@@ -150,3 +167,5 @@ namespace UTJ.SS2Profiler
 
 
 }
+
+#endif

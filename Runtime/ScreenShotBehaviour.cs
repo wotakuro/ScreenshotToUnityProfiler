@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+#if DEBUG
 namespace UTJ.SS2Profiler
 {
     public class ScreenShotBehaviour : MonoBehaviour
@@ -35,3 +36,5 @@ namespace UTJ.SS2Profiler
         }
     }
 }
+
+#endif
