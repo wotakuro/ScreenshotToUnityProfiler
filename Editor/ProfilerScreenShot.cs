@@ -6,6 +6,7 @@ using UnityEditor.Profiling;
 using Unity.Collections;
 using UnityEditorInternal;
 using System.Reflection;
+using UnityEngine.Rendering;
 
 namespace UTJ.SS2Profiler
 {
@@ -25,21 +26,28 @@ namespace UTJ.SS2Profiler
             EditorWindow.GetWindow<ProfilerScreenShot>();
         }
 
-        private Texture2D drawTexture;
+        private FlipYTextureResolver drawTextureInfo;
+
+
         private int lastPreviewFrameIdx;
         private bool isAutoReflesh = false;
         private bool isYFlip = false;
 
         private void OnEnable()
         {
+            drawTextureInfo = new FlipYTextureResolver();
             Reflesh(GetProfilerActiveFrame());
         }
         private void OnDisable()
         {
-            
+            if (drawTextureInfo != null)
+            {
+                drawTextureInfo.Dispose();
+                drawTextureInfo = null;
+            }
         }
 
-        private void Reflesh(int frameIdx)
+        private void Reflesh(int frameIdx,bool force = false)
         {
             if(lastPreviewFrameIdx == frameIdx)
             {
@@ -52,11 +60,13 @@ namespace UTJ.SS2Profiler
             if (bytes != null && bytes.Length >= 12)
             {
                 var tagInfo = GenerateTagInfo(bytes);
-                drawTexture = GenerateTagTexture(tagInfo,frameIdx);
+                var texture = GenerateTagTexture(tagInfo,frameIdx);
+                this.drawTextureInfo.SetupToRenderTexture(texture);
+                Object.DestroyImmediate(texture);
             }
             else
             {
-                drawTexture = null;
+                this.drawTextureInfo.SetupToRenderTexture(null);
             }
             lastPreviewFrameIdx = frameIdx;
         }
@@ -126,11 +136,13 @@ namespace UTJ.SS2Profiler
 
             this.isYFlip = EditorGUILayout.Toggle("Flip Y", this.isYFlip);
             EditorGUILayout.Space();
+            drawTextureInfo.SetFlip(this.isYFlip);
 
+            var drawTexture = drawTextureInfo.drawTexture;
             if (drawTexture != null)
             {
                 var rect = EditorGUILayout.GetControlRect(GUILayout.Width(drawTexture.width), GUILayout.Height(drawTexture.height));
-                EditorGUI.LabelField(rect, new GUIContent(this.drawTexture));
+                EditorGUI.LabelField(rect, new GUIContent(drawTexture));
             }
         }
 
