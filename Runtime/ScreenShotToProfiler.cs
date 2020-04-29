@@ -11,38 +11,45 @@ namespace UTJ.SS2Profiler
 {
     public class ScreenShotToProfiler
     {
-        public static readonly Guid imageBinary = new Guid("4389DCEB-F9B3-4D49-940B-E98482F3A3F8");
-        public static readonly Guid imageTag = new Guid("C9A4768A-8E99-6E3F-817F-BFCBF492D3C5");
+        public static readonly Guid MetadataGuid = new Guid("4389DCEB-F9B3-4D49-940B-E98482F3A3F8");
+        public static readonly int InfoTag = -1;
 
         public static ScreenShotToProfiler Instance { get; private set; } = new ScreenShotToProfiler();
 
-        private RenderTextureBuffer renderTextureBuffer;
+        private ScreenShotLogic renderTextureBuffer;
+        private GameObject behaviourGmo;
         private int frameIdx = 0;
         private int lastRequestIdx = -1;
 
 
-        public bool Initialize()
+        public bool Initialize(int width , int height)
         {
             if (!SystemInfo.supportsAsyncGPUReadback)
             {
                 return false;
             }
-            renderTextureBuffer = new RenderTextureBuffer();
-            var gmo = new GameObject();
-            gmo.hideFlags = HideFlags.HideAndDontSave;
-            var behaviour = gmo.AddComponent<ScreenShotBehaviour>();
+            renderTextureBuffer = new ScreenShotLogic(width , height);
+            var behaviourGmo = new GameObject();
+            behaviourGmo.hideFlags = HideFlags.HideAndDontSave;
+            GameObject.DontDestroyOnLoad(behaviourGmo);
+            var behaviour = behaviourGmo.AddComponent<ScreenShotBehaviour>();
 
             behaviour.captureFunc += this.Capture;
             behaviour.updateFunc += this.Update;
             return true;
         }
 
-        private void Update()
+        public void Destroy()
         {
-            
+            GameObject.Destroy(behaviourGmo);
+            if (renderTextureBuffer != null) { renderTextureBuffer.Dispose(); }
+            renderTextureBuffer = null;
+        }
+
+        private void Update()
+        {            
             renderTextureBuffer.AsyncReadbackRequestAtIdx(lastRequestIdx);
             renderTextureBuffer.Update();
-
         }
 
 

@@ -7,7 +7,7 @@ using UnityEngine.Profiling;
 
 namespace UTJ.SS2Profiler
 {
-    public class RenderTextureBuffer : System.IDisposable
+    internal class ScreenShotLogic : System.IDisposable
     {
 
         public const int FRAME_NUM = 8;
@@ -26,19 +26,30 @@ namespace UTJ.SS2Profiler
         }
 
         private Queue<RequestInfo> requests = new Queue<RequestInfo>();
-
         private DataInfo[] frames;
+        private byte[] tagInfo;
 
-        public RenderTextureBuffer()
+        public ScreenShotLogic(int width , int height)
         {
             frames = new DataInfo[FRAME_NUM];
             for (int i = 0; i < FRAME_NUM; ++i)
             {
-                frames[i].renderTexture = new RenderTexture(192, 128, 0);
+                frames[i].renderTexture = new RenderTexture(width, height, 0);
                 frames[i].renderTexture.name = "ss2profiler_" + i;
                 frames[i].isRequest = false;
                 frames[i].fromEnd = 5;
             }
+            this.tagInfo = new byte[12];
+            this.WriteToTagInfo(width, 1);
+            this.WriteToTagInfo(height, 2);
+        }
+
+        private void WriteToTagInfo(int val,int idx)
+        {
+            tagInfo[idx * 4 + 0] = (byte)((val >> 0 )& 0xff);
+            tagInfo[idx * 4 + 1] = (byte)((val >> 8 ) & 0xff);
+            tagInfo[idx * 4 + 2] = (byte)((val >> 16) & 0xff);
+            tagInfo[idx * 4 + 3] = (byte)((val >> 24) & 0xff);
         }
 
         public void Dispose()
@@ -76,8 +87,8 @@ namespace UTJ.SS2Profiler
                 else if (req.request.done)
                 {
 
-                    Profiler.EmitFrameMetaData(ScreenShotToProfiler.imageBinary, 
-                        0 /* frames[idx].id */, req.request.GetData<byte>());
+                    Profiler.EmitFrameMetaData(ScreenShotToProfiler.MetadataGuid, 
+                        frames[idx].id , req.request.GetData<byte>());
                     frames[idx].isRequest = false;
                     frames[idx].fromEnd = 0;
 
@@ -98,7 +109,6 @@ namespace UTJ.SS2Profiler
                 return;
             }
             if (!IsAvailable(idx) ) { return; }
-            Debug.Log("AsyncReadbackRequestAtIdx " + idx);
 
             //            var request = AsyncGPUReadback.RequestIntoNativeArray(ref frames[idx].data, frames[idx].renderTexture, 0);
             var request = AsyncGPUReadback.Request(frames[idx].renderTexture);
@@ -122,7 +132,8 @@ namespace UTJ.SS2Profiler
                     continue;
                 }
                 frames[i].id = id;
-                Profiler.EmitFrameMetaData(ScreenShotToProfiler.imageBinary, frames[i].id, new byte[4]);
+                this.WriteToTagInfo(id, 0);
+                Profiler.EmitFrameMetaData(ScreenShotToProfiler.MetadataGuid, ScreenShotToProfiler.InfoTag, tagInfo);
                 var rt = RenderTexture.GetTemporary(Screen.width, Screen.height, 0, RenderTextureFormat.ARGB32);                
                 ScreenCapture.CaptureScreenshotIntoRenderTexture(rt);
                 CommandBuffer cmd = new CommandBuffer();
