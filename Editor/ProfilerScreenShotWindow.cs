@@ -10,7 +10,7 @@ using UnityEngine.Rendering;
 
 namespace UTJ.SS2Profiler
 {
-    public class ProfilerScreenShotWindow : EditorWindow
+    internal class ProfilerScreenShotWindow : EditorWindow
     {
         private struct TagInfo
         {

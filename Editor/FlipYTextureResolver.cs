@@ -4,7 +4,7 @@ using UnityEngine.UI;
 
 namespace UTJ.SS2Profiler
 {
-    public class FlipYTextureResolver : System.IDisposable
+    internal class FlipYTextureResolver : System.IDisposable
     {
         public RenderTexture drawTexture { get; private set; }
 
