@@ -12,9 +12,9 @@ Embed Screenshot to Unity Profiler protocol.<br />
 ## how to use
 1.calling this at Runtime. <br />
 
-UTJ.SS2Profiler.Instance.Initialize(); <br />
+UTJ.SS2Profiler.ScreenShotToProfiler.Instance.Initialize(); <br />
 or <br />
-UTJ.SS2Profiler.Instance.Initialize(w,h);<br />
+UTJ.SS2Profiler.ScreenShotToProfiler.Instance.Initialize(w,h);<br />
 ( w,h means recording texture size).
 
 
