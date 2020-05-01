@@ -4,6 +4,8 @@ using UnityEngine.UI;
 
 namespace UTJ.SS2Profiler
 {
+    // sometimes this couldn't works well.
+    // compiling color will be displayed...
     internal class FlipYTextureResolver : System.IDisposable
     {
         public RenderTexture drawTexture { get; private set; }

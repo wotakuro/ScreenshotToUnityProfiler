@@ -29,7 +29,7 @@ namespace UTJ.SS2Profiler
         }
 
         private FlipYTextureResolver drawTextureInfo;
-
+        private Texture originTexture;
 
         private int lastPreviewFrameIdx;
         private bool isAutoReflesh = false;
@@ -44,6 +44,10 @@ namespace UTJ.SS2Profiler
         }
         private void OnDisable()
         {
+            if (originTexture)
+            {
+                Object.DestroyImmediate(originTexture);
+            }
             if (drawTextureInfo != null)
             {
                 drawTextureInfo.Dispose();
@@ -53,7 +57,7 @@ namespace UTJ.SS2Profiler
 
         private void Reflesh(int frameIdx,bool force = false)
         {
-            if(lastPreviewFrameIdx == frameIdx)
+            if(lastPreviewFrameIdx == frameIdx && !force)
             {
                 return;
             }
@@ -65,13 +69,22 @@ namespace UTJ.SS2Profiler
             {
                 var tagInfo = GenerateTagInfo(bytes);
                 SetOutputSize(tagInfo);
-                var texture = GenerateTagTexture(tagInfo,frameIdx);
-                this.drawTextureInfo.SetupToRenderTexture(texture);
-                Object.DestroyImmediate(texture);
+                if( originTexture)
+                {
+                    Object.DestroyImmediate(originTexture);
+                }
+                originTexture = GenerateTagTexture(tagInfo,frameIdx);
+                //this.drawTextureInfo.SetupToRenderTexture(originTexture);
             }
             else
             {
-                this.drawTextureInfo.SetupToRenderTexture(null);
+                //this.drawTextureInfo.SetupToRenderTexture(null);
+
+                if (originTexture)
+                {
+                    Object.DestroyImmediate(originTexture);
+                }
+                originTexture = null;
             }
             lastPreviewFrameIdx = frameIdx;
         }
@@ -160,20 +173,26 @@ namespace UTJ.SS2Profiler
             {
                 if (GUILayout.Button("Reflesh",GUILayout.Width(100)))
                 {
-                    this.Reflesh(GetProfilerActiveFrame());
+                    this.Reflesh(GetProfilerActiveFrame(),true);
                 }
             }
             EditorGUILayout.Space();
 
             this.isYFlip = EditorGUILayout.Toggle("Flip Y", this.isYFlip);
             EditorGUILayout.Space();
-            drawTextureInfo.SetFlip(this.isYFlip);
+            //drawTextureInfo.SetFlip(this.isYFlip);
 
-            var drawTexture = drawTextureInfo.drawTexture;
+            var drawTexture = originTexture; //drawTextureInfo.drawTexture;
+
             if (drawTexture != null)
             {
                 var rect = EditorGUILayout.GetControlRect(GUILayout.Width(outputSize.x), 
                     GUILayout.Height(outputSize.y));
+                if (this.isYFlip)
+                {
+                    rect.y += rect.height;
+                    rect.height = -rect.height;
+                }
                 EditorGUI.DrawTextureTransparent(rect, drawTexture);
             }
         }
