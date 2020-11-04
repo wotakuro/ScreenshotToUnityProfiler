@@ -39,9 +39,9 @@ namespace UTJ.SS2Profiler
             }
         }
 
-        public bool Initialize(int width , int height)
+        public bool Initialize(int width , int height,bool allowSync = false)
         {
-            if (!SystemInfo.supportsAsyncGPUReadback)
+            if (!allowSync && !SystemInfo.supportsAsyncGPUReadback)
             {
                 return false;
             }
