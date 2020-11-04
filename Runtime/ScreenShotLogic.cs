@@ -31,6 +31,9 @@ namespace UTJ.SS2Profiler
         private byte[] tagInfo;
         private CommandBuffer commandBuffer;
 
+        private Texture2D syncTexCache;
+        private CustomSampler syncUpdateSampler;
+
         public ScreenShotLogic(int width , int height)
         {
             frames = new DataInfo[FRAME_NUM];
@@ -69,7 +72,7 @@ namespace UTJ.SS2Profiler
             frames = null;
         }
 
-        public void Update()
+        public void UpdateAsyncRequest()
         {
             for( int i = 0; i < FRAME_NUM; ++i)
             {
@@ -106,7 +109,46 @@ namespace UTJ.SS2Profiler
                     break;
                 }
             }
+        }
 
+        public void ReadBackSyncAtIdx(int idx)
+        {
+            if (idx < 0 || idx >= FRAME_NUM)
+            {
+                return;
+            }
+            var rt = frames[idx].renderTexture;
+            if( rt == null) { return; }
+            if(syncUpdateSampler == null)
+            {
+                this.syncUpdateSampler = CustomSampler.Create("SyncUpdate");
+            }
+
+            syncUpdateSampler.Begin();
+            if (syncTexCache != null &&
+                (syncTexCache.width != rt.width || syncTexCache.height != rt.height) )
+            {
+                Object.Destroy(syncTexCache);
+                syncTexCache = null;
+            }
+
+            Texture2D tex2d = syncTexCache;
+            if (tex2d == null)
+            {
+                tex2d = new Texture2D(rt.width, rt.height, TextureFormat.RGBA32, false);
+            }
+            RenderTexture.active = rt;
+            tex2d.ReadPixels(new Rect(0, 0, rt.width, rt.height), 0, 0);
+            tex2d.Apply();
+            var bytes =  tex2d.GetRawTextureData<byte>();
+            Profiler.EmitFrameMetaData(ScreenShotToProfiler.MetadataGuid,
+                frames[idx].id, bytes);
+
+            syncTexCache = tex2d;
+
+            frames[idx].isRequest = false;
+            frames[idx].fromEnd = 0;
+            syncUpdateSampler.End();
         }
 
         public void AsyncReadbackRequestAtIdx(int idx)
@@ -116,7 +158,6 @@ namespace UTJ.SS2Profiler
                 return;
             }
             if (!IsAvailable(idx) ) { return; }
-
             //            var request = AsyncGPUReadback.RequestIntoNativeArray(ref frames[idx].data, frames[idx].renderTexture, 0);
             var request = AsyncGPUReadback.Request(frames[idx].renderTexture);
             requests.Enqueue( new RequestInfo { request = request, idx = idx });
@@ -145,10 +186,8 @@ namespace UTJ.SS2Profiler
                     continue;
                 }
                 frames[i].id = id;
-                this.WriteToTagInfo(id, 0);
-                this.WriteToTagInfoShort(Screen.width, 8);
-                this.WriteToTagInfoShort(Screen.height, 10);
-                Profiler.EmitFrameMetaData(ScreenShotToProfiler.MetadataGuid, ScreenShotToProfiler.InfoTag, tagInfo);
+                WriteTagMetaData(id);
+
                 var rt = RenderTexture.GetTemporary(Screen.width, Screen.height, 0, RenderTextureFormat.ARGB32);                
                 ScreenCapture.CaptureScreenshotIntoRenderTexture(rt);
                 commandBuffer.BeginSample(CAPTURE_CMD_SAMPLE);
@@ -161,9 +200,16 @@ namespace UTJ.SS2Profiler
             }
             return -1;
         }
+        private void WriteTagMetaData(int id)
+        {
+            this.WriteToTagInfo(id, 0);
+            this.WriteToTagInfoShort(Screen.width, 8);
+            this.WriteToTagInfoShort(Screen.height, 10);
+            Profiler.EmitFrameMetaData(ScreenShotToProfiler.MetadataGuid, ScreenShotToProfiler.InfoTag, tagInfo);
 
-
+        }
     }
+
 
 
 }

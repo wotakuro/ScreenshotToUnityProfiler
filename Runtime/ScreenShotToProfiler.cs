@@ -83,8 +83,14 @@ namespace UTJ.SS2Profiler
         private void Update()
         {
             this.updateSampler.Begin();
-            renderTextureBuffer.AsyncReadbackRequestAtIdx(lastRequestIdx);
-            renderTextureBuffer.Update();
+            if ( SystemInfo.supportsAsyncGPUReadback) {
+                renderTextureBuffer.AsyncReadbackRequestAtIdx(lastRequestIdx);
+                renderTextureBuffer.UpdateAsyncRequest();
+            }
+            else
+            {
+                renderTextureBuffer.ReadBackSyncAtIdx(lastRequestIdx);
+            }
 
             this.updateSampler.End();
         }
@@ -93,7 +99,7 @@ namespace UTJ.SS2Profiler
         {
             captureSampler.Begin();
             lastRequestIdx = renderTextureBuffer.CaptureScreen(frameIdx);
-            renderTextureBuffer.Update();
+            renderTextureBuffer.UpdateAsyncRequest();
             ++frameIdx;
             captureSampler.End();
         }

@@ -32,7 +32,7 @@ namespace UTJ.SS2Profiler
         private Texture originTexture;
 
         private int lastPreviewFrameIdx;
-        private bool isAutoReflesh = false;
+        private bool isAutoReflesh = true;
         private bool isYFlip = false;
 
         private Vector2Int outputSize = new Vector2Int();
@@ -63,6 +63,7 @@ namespace UTJ.SS2Profiler
             }
             HierarchyFrameDataView hierarchyFrameDataView =
                 ProfilerDriver.GetHierarchyFrameDataView(frameIdx, 0, HierarchyFrameDataView.ViewModes.Default, 0, false); ;
+            if(hierarchyFrameDataView == null) { return; }
             NativeArray<byte> bytes =
                 hierarchyFrameDataView.GetFrameMetaData<byte>(ScreenShotToProfiler.MetadataGuid, ScreenShotToProfiler.InfoTag);
             if (bytes != null && bytes.Length >= 12)
@@ -140,6 +141,10 @@ namespace UTJ.SS2Profiler
             {
                 HierarchyFrameDataView hierarchyFrameDataView =
                     ProfilerDriver.GetHierarchyFrameDataView(i, 0, HierarchyFrameDataView.ViewModes.Default, 0, false);
+                if( hierarchyFrameDataView == null)
+                {
+                    continue;
+                }
                 NativeArray<byte> bytes =
                     hierarchyFrameDataView.GetFrameMetaData<byte>(ScreenShotToProfiler.MetadataGuid, info.id);
                 
