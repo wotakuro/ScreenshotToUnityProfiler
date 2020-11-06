@@ -31,21 +31,28 @@ namespace UTJ.SS2Profiler
         {
             if (Screen.width > Screen.height)
             {
-                return Initialize(192,128);
+                return Initialize(192,128,true);
             }
             else
             {
-                return Initialize(128, 192);
+                return Initialize(128, 192,true);
             }
         }
 
         public bool Initialize(int width , int height,bool allowSync = false)
         {
-            if (!allowSync && !SystemInfo.supportsAsyncGPUReadback)
-            {
-                return false;
-            }
 #if DEBUG
+            if (!SystemInfo.supportsAsyncGPUReadback)
+            {
+                if (!allowSync)
+                {
+                    return false;
+                }
+                else
+                {
+                    UnityEngine.Debug.LogWarning("SystemInfo.supportsAsyncGPUReadback is false! Profiler Screenshot is very slow...");
+                }
+            }
             if (renderTextureBuffer != null) { return false; }
             InitializeLogic(width,height);
 #endif
