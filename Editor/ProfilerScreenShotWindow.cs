@@ -20,7 +20,11 @@ namespace UTJ.SS2Profiler
             public int originWidth;
             public int originHeight;
         }
-
+        private enum OutputMode:int
+        {
+            Origin = 0,
+            FitWindow = 1,
+        }
 
         [MenuItem("Tools/ProfilerScreenshot")]
         public static void Create()
@@ -32,10 +36,17 @@ namespace UTJ.SS2Profiler
         private Texture originTexture;
 
         private int lastPreviewFrameIdx;
-        private bool isAutoReflesh = false;
+        private bool isAutoReflesh = true;
         private bool isYFlip = false;
+        private OutputMode outputMode;
 
-        private Vector2Int outputSize = new Vector2Int();
+        private GUIContent[] outputModeSelect = new GUIContent[2]
+        {
+            new GUIContent("Original Size"),
+            new GUIContent("Fit window Size"),
+        };
+
+    private Vector2Int outputSize = new Vector2Int();
 
         private void OnEnable()
         {
@@ -63,6 +74,7 @@ namespace UTJ.SS2Profiler
             }
             HierarchyFrameDataView hierarchyFrameDataView =
                 ProfilerDriver.GetHierarchyFrameDataView(frameIdx, 0, HierarchyFrameDataView.ViewModes.Default, 0, false); ;
+            if(hierarchyFrameDataView == null) { return; }
             NativeArray<byte> bytes =
                 hierarchyFrameDataView.GetFrameMetaData<byte>(ScreenShotToProfiler.MetadataGuid, ScreenShotToProfiler.InfoTag);
             if (bytes != null && bytes.Length >= 12)
@@ -140,6 +152,10 @@ namespace UTJ.SS2Profiler
             {
                 HierarchyFrameDataView hierarchyFrameDataView =
                     ProfilerDriver.GetHierarchyFrameDataView(i, 0, HierarchyFrameDataView.ViewModes.Default, 0, false);
+                if( hierarchyFrameDataView == null)
+                {
+                    continue;
+                }
                 NativeArray<byte> bytes =
                     hierarchyFrameDataView.GetFrameMetaData<byte>(ScreenShotToProfiler.MetadataGuid, info.id);
                 
@@ -176,9 +192,11 @@ namespace UTJ.SS2Profiler
                     this.Reflesh(GetProfilerActiveFrame(),true);
                 }
             }
-            EditorGUILayout.Space();
-
+            EditorGUILayout.BeginHorizontal();
             this.isYFlip = EditorGUILayout.Toggle("Flip Y", this.isYFlip);
+            EditorGUILayout.LabelField("Size",GUILayout.Width(40));
+            outputMode = (OutputMode)EditorGUILayout.Popup((int)outputMode, outputModeSelect);
+            EditorGUILayout.EndHorizontal();
             EditorGUILayout.Space();
             //drawTextureInfo.SetFlip(this.isYFlip);
 
@@ -188,6 +206,11 @@ namespace UTJ.SS2Profiler
             {
                 var rect = EditorGUILayout.GetControlRect(GUILayout.Width(outputSize.x), 
                     GUILayout.Height(outputSize.y));
+                if (outputMode == OutputMode.FitWindow)
+                {
+                    rect = FitWindow(rect);
+                }
+
                 if (this.isYFlip)
                 {
                     rect.y += rect.height;
@@ -195,6 +218,27 @@ namespace UTJ.SS2Profiler
                 }
                 EditorGUI.DrawTextureTransparent(rect, drawTexture);
             }
+        }
+        private Rect FitWindow(Rect r)
+        {
+            if( r.width == 0 || r.height == 0) { return r; }
+            var windowPos = this.position;
+            float xparam = (position.width - r.x * 2) / r.width;
+            float yparam = (position.height - (r.y+5) ) / r.height;
+
+            if( xparam > yparam)
+            {
+                r.width *= yparam;
+                r.height *= yparam;
+            }
+            else
+            {
+                r.width *= xparam;
+                r.height *= xparam;
+            }
+
+
+            return r;
         }
 
         private int GetProfilerActiveFrame()
