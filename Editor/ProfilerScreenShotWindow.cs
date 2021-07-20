@@ -51,7 +51,7 @@ namespace UTJ.SS2Profiler
         private void OnEnable()
         {
             drawTextureInfo = new FlipYTextureResolver();
-            Reflesh(GetProfilerActiveFrame());
+            Refresh(GetProfilerActiveFrame());
         }
         private void OnDisable()
         {
@@ -66,7 +66,7 @@ namespace UTJ.SS2Profiler
             }
         }
 
-        private void Reflesh(int frameIdx,bool force = false)
+        private void Refresh(int frameIdx,bool force = false)
         {
             if(lastPreviewFrameIdx == frameIdx && !force)
             {
@@ -176,7 +176,7 @@ namespace UTJ.SS2Profiler
             var frameIdx = this.GetProfilerActiveFrame();
             if( lastPreviewFrameIdx != frameIdx)
             {
-                this.Reflesh(frameIdx);
+                this.Refresh(frameIdx);
                 this.Repaint();
             }
         }
@@ -189,7 +189,7 @@ namespace UTJ.SS2Profiler
             {
                 if (GUILayout.Button("Reflesh",GUILayout.Width(100)))
                 {
-                    this.Reflesh(GetProfilerActiveFrame(),true);
+                    this.Refresh(GetProfilerActiveFrame(),true);
                 }
             }
             EditorGUILayout.BeginHorizontal();
