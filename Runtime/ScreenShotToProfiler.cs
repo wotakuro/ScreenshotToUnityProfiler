@@ -24,6 +24,13 @@ namespace UTJ.SS2Profiler
             PNG = 2,
             JPG = 3,
         }
+        public Action<RenderTexture> captureBehaviour
+        {
+            set
+            {
+                this.renderTextureBuffer.captureBehaviour = value;
+            }
+        }
 
 #if DEBUG
         private const string CAPTURE_CMD_SAMPLE = "ScreenToRt";
