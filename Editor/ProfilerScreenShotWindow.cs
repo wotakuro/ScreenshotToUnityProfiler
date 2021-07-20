@@ -74,7 +74,7 @@ namespace UTJ.SS2Profiler
             }
             HierarchyFrameDataView hierarchyFrameDataView =
                 ProfilerDriver.GetHierarchyFrameDataView(frameIdx, 0, HierarchyFrameDataView.ViewModes.Default, 0, false); ;
-            if(hierarchyFrameDataView == null) { return; }
+            if(hierarchyFrameDataView == null || !hierarchyFrameDataView.valid) { return; }
             NativeArray<byte> bytes =
                 hierarchyFrameDataView.GetFrameMetaData<byte>(ScreenShotToProfiler.MetadataGuid, ScreenShotToProfiler.InfoTag);
             if (bytes != null && bytes.Length >= 12)
