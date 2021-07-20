@@ -19,6 +19,7 @@ namespace UTJ.SS2Profiler
             public int height;
             public int originWidth;
             public int originHeight;
+            public ScreenShotToProfiler.TextureCompress compress;
         }
         private enum OutputMode:int
         {
@@ -127,6 +128,14 @@ namespace UTJ.SS2Profiler
             info.height = GetShortData(data, 6);
             info.originWidth = GetShortData(data, 8);
             info.originHeight = GetShortData(data, 10);
+            if (data.Length > 12)
+            {
+                info.compress = (ScreenShotToProfiler.TextureCompress)data[12];
+            }
+            else
+            {
+                info.compress = ScreenShotToProfiler.TextureCompress.None;
+            }
             return info;
         }
         private int GetIntData(NativeArray<byte> data, int idx)
@@ -158,11 +167,20 @@ namespace UTJ.SS2Profiler
                 }
                 NativeArray<byte> bytes =
                     hierarchyFrameDataView.GetFrameMetaData<byte>(ScreenShotToProfiler.MetadataGuid, info.id);
-                
-                if( bytes.IsCreated && bytes.Length > 16  )
+
+                if (bytes.IsCreated && bytes.Length > 16)
                 {
-                    texture = new Texture2D(info.width, info.height,TextureFormat.RGBA32,false);
-                    texture.LoadRawTextureData(bytes);
+                    texture = new Texture2D(info.width, info.height, TextureFormat.RGBA32, false);
+                    switch (info.compress) {
+                        case ScreenShotToProfiler.TextureCompress.None:
+                            texture.LoadRawTextureData(bytes);
+                            break;
+                        case ScreenShotToProfiler.TextureCompress.PNG:
+                        case ScreenShotToProfiler.TextureCompress.JPG:
+                            texture.LoadRawTextureData(bytes);
+                            break;
+                    }
+                    //                    texture.LoadImage(bytes.ToArray());
                     texture.Apply();
                     break;
                 }

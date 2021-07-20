@@ -2,6 +2,8 @@
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Profiling;
+using Unity.Collections;
+using UnityEngine.Experimental.Rendering;
 
 #if DEBUG
 namespace UTJ.SS2Profiler
@@ -18,6 +20,7 @@ namespace UTJ.SS2Profiler
             public int id;
             public bool isRequest;
             public int fromEnd;
+            public ScreenShotToProfiler.TextureCompress compress;
         }
         private struct RequestInfo
         {
@@ -99,9 +102,10 @@ namespace UTJ.SS2Profiler
                 }
                 else if (req.request.done)
                 {
+                    var data = req.request.GetData<byte>();
+                    this.EmitCaptureBodyData( frames[idx].compress,frames[idx].id, data,
+                        frames[idx].renderTexture);
 
-                    Profiler.EmitFrameMetaData(ScreenShotToProfiler.MetadataGuid, 
-                        frames[idx].id , req.request.GetData<byte>());
                     frames[idx].isRequest = false;
                     frames[idx].fromEnd = 0;
 
@@ -144,14 +148,45 @@ namespace UTJ.SS2Profiler
             tex2d.ReadPixels(new Rect(0, 0, rt.width, rt.height), 0, 0);
             tex2d.Apply();
             var bytes =  tex2d.GetRawTextureData<byte>();
-            Profiler.EmitFrameMetaData(ScreenShotToProfiler.MetadataGuid,
-                frames[idx].id, bytes);
+            
+            this.EmitCaptureBodyData( frames[idx].compress, frames[idx].id, bytes,
+                frames[idx].renderTexture);
 
             syncTexCache = tex2d;
 
             frames[idx].isRequest = false;
             frames[idx].fromEnd = 0;
             syncUpdateSampler.End();
+        }
+
+        private void EmitCaptureBodyData(ScreenShotToProfiler.TextureCompress comp,int id, 
+            NativeArray<byte> bytes, RenderTexture originRt)
+        {
+            switch (comp) {
+                case ScreenShotToProfiler.TextureCompress.None:
+                    Profiler.EmitFrameMetaData(ScreenShotToProfiler.MetadataGuid, id, bytes);
+                    break;
+                case ScreenShotToProfiler.TextureCompress.RGB_ONLY:
+                    Profiler.EmitFrameMetaData(ScreenShotToProfiler.MetadataGuid, id, bytes);
+                    break;
+                case ScreenShotToProfiler.TextureCompress.PNG:
+                    {
+                        using (var pngData = ImageConversion.EncodeNativeArrayToPNG(bytes,
+                            originRt.graphicsFormat, (uint)originRt.width, (uint)originRt.height))
+                        {
+                            Profiler.EmitFrameMetaData(ScreenShotToProfiler.MetadataGuid, id, pngData);
+                        }
+                    }
+                    break;
+                case ScreenShotToProfiler.TextureCompress.JPG:
+                    using (var pngData = ImageConversion.EncodeNativeArrayToJPG(bytes,
+                        originRt.graphicsFormat, (uint)originRt.width, (uint)originRt.height))
+                    {
+                        Profiler.EmitFrameMetaData(ScreenShotToProfiler.MetadataGuid, id, pngData);
+                    }
+                    break;
+            }
+
         }
 
         public void AsyncReadbackRequestAtIdx(int idx)
@@ -185,6 +220,7 @@ namespace UTJ.SS2Profiler
                 }
                 if(captureBehaviour == null) { continue; }
                 frames[i].id = id;
+                frames[i].compress = this.compress;
                 WriteTagMetaData(id);
                 captureBehaviour(frames[i].renderTexture);
                 return i;
