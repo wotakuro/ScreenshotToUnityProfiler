@@ -11,7 +11,6 @@ namespace UTJ.SS2Profiler
     {
 
         private const int FRAME_NUM = 8;
-        private const string CAPTURE_CMD_SAMPLE = "ScreenToRt";
 
         private struct DataInfo
         {
@@ -29,12 +28,14 @@ namespace UTJ.SS2Profiler
         private Queue<RequestInfo> requests = new Queue<RequestInfo>();
         private DataInfo[] frames;
         private byte[] tagInfo;
-        private CommandBuffer commandBuffer;
 
         private Texture2D syncTexCache;
         private CustomSampler syncUpdateSampler;
+        private ScreenShotToProfiler.TextureCompress compress;
 
-        public ScreenShotLogic(int width , int height)
+        public System.Action<RenderTexture> captureBehaviour { get; set; }
+
+        public ScreenShotLogic(int width , int height, ScreenShotToProfiler.TextureCompress comp)
         {
             frames = new DataInfo[FRAME_NUM];
             for (int i = 0; i < FRAME_NUM; ++i)
@@ -44,9 +45,11 @@ namespace UTJ.SS2Profiler
                 frames[i].isRequest = false;
                 frames[i].fromEnd = 5;
             }
-            this.tagInfo = new byte[12];
+            this.tagInfo = new byte[16];
             this.WriteToTagInfoShort(width, 4);
             this.WriteToTagInfoShort(height, 6);
+            this.tagInfo[12] = (byte)comp;
+            this.compress = comp;
         }
 
         private void WriteToTagInfo(int val,int idx)
@@ -173,11 +176,6 @@ namespace UTJ.SS2Profiler
 
         public int CaptureScreen(int id)
         { 
-            if(commandBuffer == null) { 
-                commandBuffer = new CommandBuffer();
-                commandBuffer.name = "ScreenCapture";
-            }
-            commandBuffer.Clear();
 
             for (int i = 0; i < FRAME_NUM; ++i)
             {
@@ -185,17 +183,10 @@ namespace UTJ.SS2Profiler
                 {
                     continue;
                 }
+                if(captureBehaviour == null) { continue; }
                 frames[i].id = id;
                 WriteTagMetaData(id);
-
-                var rt = RenderTexture.GetTemporary(Screen.width, Screen.height, 0, RenderTextureFormat.ARGB32);                
-                ScreenCapture.CaptureScreenshotIntoRenderTexture(rt);
-                commandBuffer.BeginSample(CAPTURE_CMD_SAMPLE);
-                commandBuffer.Blit(rt, frames[i].renderTexture);
-                commandBuffer.EndSample(CAPTURE_CMD_SAMPLE);
-                Graphics.ExecuteCommandBuffer(commandBuffer);
-                RenderTexture.ReleaseTemporary(rt);
-                commandBuffer.Clear();
+                captureBehaviour(frames[i].renderTexture);
                 return i;
             }
             return -1;

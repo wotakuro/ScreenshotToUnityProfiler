@@ -152,7 +152,7 @@ namespace UTJ.SS2Profiler
             {
                 HierarchyFrameDataView hierarchyFrameDataView =
                     ProfilerDriver.GetHierarchyFrameDataView(i, 0, HierarchyFrameDataView.ViewModes.Default, 0, false);
-                if( hierarchyFrameDataView == null)
+                if( hierarchyFrameDataView == null || !hierarchyFrameDataView.valid)
                 {
                     continue;
                 }

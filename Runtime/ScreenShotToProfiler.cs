@@ -17,7 +17,19 @@ namespace UTJ.SS2Profiler
 
         public static ScreenShotToProfiler Instance { get; private set; } = new ScreenShotToProfiler();
 
+        public enum TextureCompress:byte
+        {
+            None = 0,
+            RGB_ONLY = 1,
+            PNG = 2,
+            JPG = 3,
+        }
+
 #if DEBUG
+        private const string CAPTURE_CMD_SAMPLE = "ScreenToRt";
+
+        private CommandBuffer commandBuffer;
+
         private ScreenShotLogic renderTextureBuffer;
         private GameObject behaviourGmo;
         private int frameIdx = 0;
@@ -54,14 +66,15 @@ namespace UTJ.SS2Profiler
                 }
             }
             if (renderTextureBuffer != null) { return false; }
-            InitializeLogic(width,height);
+            InitializeLogic(width,height,TextureCompress.None);
 #endif
             return true;
         }
-        private void InitializeLogic(int width,int height)
+        private void InitializeLogic(int width,int height,TextureCompress compress)
         {
 #if DEBUG
-            renderTextureBuffer = new ScreenShotLogic(width, height);
+            renderTextureBuffer = new ScreenShotLogic(width, height, compress);
+            renderTextureBuffer.captureBehaviour = this.DefaultCaptureBehaviour;
             var behaviourGmo = new GameObject();
             behaviourGmo.hideFlags = HideFlags.HideAndDontSave;
             GameObject.DontDestroyOnLoad(behaviourGmo);
@@ -111,6 +124,26 @@ namespace UTJ.SS2Profiler
             captureSampler.End();
         }
 #endif
+
+        public void DefaultCaptureBehaviour(RenderTexture target)
+        {
+#if DEBUG
+            if (commandBuffer == null)
+            {
+                commandBuffer = new CommandBuffer();
+                commandBuffer.name = "ScreenCapture";
+            }
+            commandBuffer.Clear();
+            var rt = RenderTexture.GetTemporary(Screen.width, Screen.height, 0, RenderTextureFormat.ARGB32);
+            ScreenCapture.CaptureScreenshotIntoRenderTexture(rt);
+            commandBuffer.BeginSample(CAPTURE_CMD_SAMPLE);
+            commandBuffer.Blit(rt,  target);
+            commandBuffer.EndSample(CAPTURE_CMD_SAMPLE);
+            Graphics.ExecuteCommandBuffer(commandBuffer);
+            RenderTexture.ReleaseTemporary(rt);
+            commandBuffer.Clear();
+#endif
+        }
 
     }
 
