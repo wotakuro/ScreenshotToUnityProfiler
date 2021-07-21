@@ -11,7 +11,7 @@ Embed Screenshot to Unity Profiler protocol.<br />
 
 ## reccomend
 - the platforms that supports System.supportsAsyncGPUReadback (Mobile vulkan or metal....)<br />
- Support sync readback from 1.1.0 , however it's very slow....
+ Support sync readback from 1.1.0 , however it's very slow....<br />
 
 ## install
 
@@ -36,6 +36,18 @@ UTJ.SS2Profiler.ScreenShotToProfiler.Instance.Initialize(w,h);<br />
 2.call "Tools -> ProfilerScreenshot" from Menu. <br />
 And then window will be displayed.
 
+### Capture specific image instead of ScreenCapture
+This is a sample that use RenderTexture instead of ScreenCapture.
+```
+RenderTexture captureRenderTexture;
+
+ScreenShotToProfiler.Instance.captureBehaviour = (target) => {
+    CommandBuffer commandBuffer = new CommandBuffer();
+    commandBuffer.name = "ScreenCapture";
+    commandBuffer.Blit(captureRenderTexture, target);
+    Graphics.ExecuteCommandBuffer(commandBuffer);
+};
+```
 
 ## change
 <pre>

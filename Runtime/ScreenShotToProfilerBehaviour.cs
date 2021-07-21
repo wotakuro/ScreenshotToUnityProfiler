@@ -4,7 +4,7 @@ using UTJ.SS2Profiler;
 
 namespace UTJ.SS2Profiler
 {
-    public class ScreenShotToProfilerBehaviour : MonoBehaviour
+    internal class ScreenShotToProfilerBehaviour : MonoBehaviour
     {
         [SerializeField]
         private int width = 192;
