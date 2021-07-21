@@ -80,6 +80,7 @@ namespace UTJ.SS2Profiler
                 {
                     UnityEngine.Debug.LogWarning("SystemInfo.supportsAsyncGPUReadback is false! Profiler Screenshot is very slow...");
                 }
+                compress = ScreenShotProfilerUtil.FallbackAtNoGPUAsync(compress);
             }
             if (renderTextureBuffer != null) { return false; }
             InitializeLogic(width, height, compress);
