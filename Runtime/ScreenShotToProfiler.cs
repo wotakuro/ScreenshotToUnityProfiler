@@ -20,7 +20,7 @@ namespace UTJ.SS2Profiler
         public enum TextureCompress:byte
         {
             None = 0,
-            RGB_ONLY = 1,
+            RGB_565 = 1,
             PNG = 2,
             JPG = 3,
         }
@@ -61,6 +61,14 @@ namespace UTJ.SS2Profiler
         public bool Initialize(int width , int height,bool allowSync = false)
         {
 #if DEBUG
+            Initialize(width, height, TextureCompress.RGB_565, allowSync);
+#endif
+            return true;
+        }
+
+        public bool Initialize(int width, int height, TextureCompress compress, bool allowSync)
+        {
+#if DEBUG
             if (!SystemInfo.supportsAsyncGPUReadback)
             {
                 if (!allowSync)
@@ -73,19 +81,21 @@ namespace UTJ.SS2Profiler
                 }
             }
             if (renderTextureBuffer != null) { return false; }
-            InitializeLogic(width,height,TextureCompress.None);
+            InitializeLogic(width, height, compress);
 #endif
             return true;
         }
+
+
         private void InitializeLogic(int width,int height,TextureCompress compress)
         {
 #if DEBUG
             renderTextureBuffer = new ScreenShotLogic(width, height, compress);
             renderTextureBuffer.captureBehaviour = this.DefaultCaptureBehaviour;
-            var behaviourGmo = new GameObject();
-            behaviourGmo.hideFlags = HideFlags.HideAndDontSave;
+            this.behaviourGmo = new GameObject();
+            this.behaviourGmo.hideFlags = HideFlags.HideAndDontSave;
             GameObject.DontDestroyOnLoad(behaviourGmo);
-            var behaviour = behaviourGmo.AddComponent<ScreenShotBehaviour>();
+            var behaviour = this.behaviourGmo.AddComponent<ScreenShotBehaviour>();
 
             this.captureSampler = CustomSampler.Create("ScreenshotToProfiler.Capture");
             this.updateSampler = CustomSampler.Create("ScreenshotToProfiler.Update");

@@ -4,6 +4,7 @@ using UnityEngine.Rendering;
 using UnityEngine.Profiling;
 using Unity.Collections;
 using UnityEngine.Experimental.Rendering;
+using Unity.Collections.LowLevel.Unsafe;
 
 #if DEBUG
 namespace UTJ.SS2Profiler
@@ -34,16 +35,21 @@ namespace UTJ.SS2Profiler
 
         private Texture2D syncTexCache;
         private CustomSampler syncUpdateSampler;
+
+        private CustomSampler rgbCompressSampler;
+        private CustomSampler pngCompressSampler;
+        private CustomSampler jpgCompressSampler;
         private ScreenShotToProfiler.TextureCompress compress;
 
         public System.Action<RenderTexture> captureBehaviour { get; set; }
 
         public ScreenShotLogic(int width , int height, ScreenShotToProfiler.TextureCompress comp)
         {
+            RenderTextureFormat format = GetFormat(comp);
             frames = new DataInfo[FRAME_NUM];
             for (int i = 0; i < FRAME_NUM; ++i)
             {
-                frames[i].renderTexture = new RenderTexture(width, height, 0);
+                frames[i].renderTexture = new RenderTexture(width, height, 0, format);
                 frames[i].renderTexture.name = "ss2profiler_" + i;
                 frames[i].isRequest = false;
                 frames[i].fromEnd = 5;
@@ -53,6 +59,17 @@ namespace UTJ.SS2Profiler
             this.WriteToTagInfoShort(height, 6);
             this.tagInfo[12] = (byte)comp;
             this.compress = comp;
+        }
+
+        private static RenderTextureFormat GetFormat(ScreenShotToProfiler.TextureCompress comp)
+        {
+            switch (comp)
+            {
+                case ScreenShotToProfiler.TextureCompress.RGB_565:
+                case ScreenShotToProfiler.TextureCompress.JPG:
+                    return RenderTextureFormat.RGB565;
+            }
+            return RenderTextureFormat.ARGB32;
         }
 
         private void WriteToTagInfo(int val,int idx)
@@ -159,6 +176,20 @@ namespace UTJ.SS2Profiler
             syncUpdateSampler.End();
         }
 
+        private unsafe NativeArray<byte> ConvertToRGBData(NativeArray<byte> bytes,int pixel)
+        {
+            if(rgbCompressSampler == null) { rgbCompressSampler = CustomSampler.Create("RGBCompress"); }
+            rgbCompressSampler.Begin();
+            void* bytesHead = NativeArrayUnsafeUtility.GetUnsafePtr(bytes);
+
+
+            NativeArray<byte> data = 
+                NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<byte>(bytesHead, pixel * 3, Allocator.None);
+            rgbCompressSampler.End();
+            return data;
+        }
+
+
         private void EmitCaptureBodyData(ScreenShotToProfiler.TextureCompress comp,int id, 
             NativeArray<byte> bytes, RenderTexture originRt)
         {
@@ -166,23 +197,31 @@ namespace UTJ.SS2Profiler
                 case ScreenShotToProfiler.TextureCompress.None:
                     Profiler.EmitFrameMetaData(ScreenShotToProfiler.MetadataGuid, id, bytes);
                     break;
-                case ScreenShotToProfiler.TextureCompress.RGB_ONLY:
+                case ScreenShotToProfiler.TextureCompress.RGB_565:
                     Profiler.EmitFrameMetaData(ScreenShotToProfiler.MetadataGuid, id, bytes);
                     break;
                 case ScreenShotToProfiler.TextureCompress.PNG:
                     {
+                        if (pngCompressSampler == null) { pngCompressSampler = CustomSampler.Create("pngCompress"); }
+                        pngCompressSampler.Begin();
                         using (var pngData = ImageConversion.EncodeNativeArrayToPNG(bytes,
                             originRt.graphicsFormat, (uint)originRt.width, (uint)originRt.height))
                         {
                             Profiler.EmitFrameMetaData(ScreenShotToProfiler.MetadataGuid, id, pngData);
                         }
+                        pngCompressSampler.End();
                     }
                     break;
                 case ScreenShotToProfiler.TextureCompress.JPG:
-                    using (var pngData = ImageConversion.EncodeNativeArrayToJPG(bytes,
-                        originRt.graphicsFormat, (uint)originRt.width, (uint)originRt.height))
                     {
-                        Profiler.EmitFrameMetaData(ScreenShotToProfiler.MetadataGuid, id, pngData);
+                        if(jpgCompressSampler == null) { jpgCompressSampler = CustomSampler.Create("jpgCompress"); }
+                        jpgCompressSampler.Begin();
+                        using (var pngData = ImageConversion.EncodeNativeArrayToJPG(bytes,
+                            originRt.graphicsFormat, (uint)originRt.width, (uint)originRt.height))
+                        {
+                            Profiler.EmitFrameMetaData(ScreenShotToProfiler.MetadataGuid, id, pngData);
+                        }
+                        jpgCompressSampler.End();
                     }
                     break;
             }
