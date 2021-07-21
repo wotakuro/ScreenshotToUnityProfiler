@@ -2,42 +2,42 @@
 
 [![openupm](https://img.shields.io/npm/v/com.utj.screenshot2profiler?label=openupm&registry_uri=https://package.openupm.com)](https://openupm.com/packages/com.utj.screenshot2profiler/)
 
-## ‚±‚Ìƒc[ƒ‹‚É‚Â‚¢‚Ä
-Unity Profilerã‚ÉAScreenshot‚ğÚ‚¹‚é‚±‚Æ‚ªo—ˆ‚Ü‚·.<br />
+## ã“ã®ãƒ„ãƒ¼ãƒ«ã«ã¤ã„ã¦
+Unity Profilerä¸Šã«ã€Screenshotã‚’è¼‰ã›ã‚‹ã“ã¨ãŒå‡ºæ¥ã¾ã™.<br />
 ![ScreenshotToUnityProfiler](Documentation~/image.gif "ScreenshotToUnityProfiler")
 
-## •K—v‚ÈŠÂ‹«
-- Unity 2019.3ˆÈã.<br />
+## å¿…è¦ãªç’°å¢ƒ
+- Unity 2019.3ä»¥ä¸Š.<br />
 
-## „§ŠÂ‹«
-- System.supportsAsyncGPUReadback‚ğƒTƒ|[ƒg‚µ‚Ä‚¢‚éŠÂ‹« (ƒ‚ƒoƒCƒ‹‚Å‚Í vulkan ‚Ü‚½‚Í metalB¦2021.2ˆÈ~‚Å‚ ‚ê‚ÎGLES3‚Å‚à‰Â)<br />
- supportsAsyncGPUReadback‚ª–¢‘Î‰‚Å‚à“®ì‚Í‚µ‚Ü‚·‚ªA”ñí‚Év‚¢‚½‚ß„§‚Å‚«‚Ü‚¹‚ñB<br />
+## æ¨å¥¨ç’°å¢ƒ
+- System.supportsAsyncGPUReadbackã‚’ã‚µãƒãƒ¼ãƒˆã—ã¦ã„ã‚‹ç’°å¢ƒ (ãƒ¢ãƒã‚¤ãƒ«ã§ã¯ vulkan ã¾ãŸã¯ metalã€‚â€»2021.2ä»¥é™ã§ã‚ã‚Œã°GLES3ã§ã‚‚å¯)<br />
+ supportsAsyncGPUReadbackãŒæœªå¯¾å¿œã§ã‚‚å‹•ä½œã¯ã—ã¾ã™ãŒã€éå¸¸ã«æ€ã„ãŸã‚æ¨å¥¨ã§ãã¾ã›ã‚“ã€‚<br />
 
-## ƒCƒ“ƒXƒg[ƒ‹‚É‚Â‚¢‚Ä
+## ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã«ã¤ã„ã¦
 
-[OpenUPM](https://openupm.com/packages/com.utj.screenshot2profiler/) (requires [openupm-cli](https://github.com/openupm/openupm-cli#openupm-cli)) Œo—R‚É‚Â‚¢‚Ä
+[OpenUPM](https://openupm.com/packages/com.utj.screenshot2profiler/) (requires [openupm-cli](https://github.com/openupm/openupm-cli#openupm-cli)) çµŒç”±ã«ã¤ã„ã¦
 
 ```
 openupm add com.utj.screenshot2profiler
 ```
 
-## —˜—p•û–@
-1.‰Šú‰»•û–@‚É‚Â‚¢‚Ä. <br />
-"ScreenShotProfiler.prefab" ‚ğƒV[ƒ“ã‚É”z’u‚µ‚Ä‚­‚¾‚³‚¢.<br />
+## åˆ©ç”¨æ–¹æ³•
+1.åˆæœŸåŒ–æ–¹æ³•ã«ã¤ã„ã¦. <br />
+"ScreenShotProfiler.prefab" ã‚’ã‚·ãƒ¼ãƒ³ä¸Šã«é…ç½®ã—ã¦ãã ã•ã„.<br />
 ![ScreenshotToUnityProfiler](Documentation~/ScreenShotPrefab.png "Place Prefab")<br />
-(Inspectorã‚Åİ’è•ÏX‚ª‰Â”\‚Å‚·B)<br />
+(Inspectorä¸Šã§è¨­å®šå¤‰æ›´ãŒå¯èƒ½ã§ã™ã€‚)<br />
 
-‚à‚µ‚­‚Í‰º‹L‚Ì‰Šú‰»ƒƒ\ƒbƒh‚ğŒÄ‚Ño‚µ‚Ä‚­‚¾‚³‚¢
+ã‚‚ã—ãã¯ä¸‹è¨˜ã®åˆæœŸåŒ–ãƒ¡ã‚½ãƒƒãƒ‰ã‚’å‘¼ã³å‡ºã—ã¦ãã ã•ã„
 UTJ.SS2Profiler.ScreenShotToProfiler.Instance.Initialize(); <br />
-‚à‚µ‚­‚Í <br />
+ã‚‚ã—ãã¯ <br />
 UTJ.SS2Profiler.ScreenShotToProfiler.Instance.Initialize(w,h);<br />
-( w,h ‚ÍƒŒƒR[ƒh‚·‚éƒeƒNƒXƒ`ƒƒƒTƒCƒY‚Å‚·).
+( w,h ã¯ãƒ¬ã‚³ãƒ¼ãƒ‰ã™ã‚‹ãƒ†ã‚¯ã‚¹ãƒãƒ£ã‚µã‚¤ã‚ºã§ã™).
 
-2."Tools -> ProfilerScreenshot" ‚ğƒƒjƒ…[‚©‚çŒÄ‚Ño‚µ‚Ä‚­‚¾‚³‚¢B <br />
-ƒXƒNƒŠ[ƒ“ƒVƒ‡ƒbƒg‚ª•\¦‚³‚ê‚éƒEƒBƒ“ƒhƒE‚ªŒ»‚ê‚Ü‚·
+2."Tools -> ProfilerScreenshot" ã‚’ãƒ¡ãƒ‹ãƒ¥ãƒ¼ã‹ã‚‰å‘¼ã³å‡ºã—ã¦ãã ã•ã„ã€‚ <br />
+ã‚¹ã‚¯ãƒªãƒ¼ãƒ³ã‚·ãƒ§ãƒƒãƒˆãŒè¡¨ç¤ºã•ã‚Œã‚‹ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ãŒç¾ã‚Œã¾ã™
 
-### ƒXƒNƒŠ[ƒ“ƒLƒƒƒvƒ`ƒƒ‚Ì‘ã‚í‚è‚É”CˆÓ‚Ì‰æ‘œ‚ğ•\¦‚·‚é•û–@
-‰º‹L‚ÍRenderTexture‚ğScreenShot‚ÉÚ‚¹‚éƒTƒ“ƒvƒ‹‚Å‚·
+### ã‚¹ã‚¯ãƒªãƒ¼ãƒ³ã‚­ãƒ£ãƒ—ãƒãƒ£ã®ä»£ã‚ã‚Šã«ä»»æ„ã®ç”»åƒã‚’è¡¨ç¤ºã™ã‚‹æ–¹æ³•
+ä¸‹è¨˜ã¯RenderTextureã‚’ScreenShotã«è¼‰ã›ã‚‹ã‚µãƒ³ãƒ—ãƒ«ã§ã™
 ```
 RenderTexture captureRenderTexture;
 
@@ -48,15 +48,16 @@ ScreenShotToProfiler.Instance.captureBehaviour = (target) => {
     Graphics.ExecuteCommandBuffer(commandBuffer);
 };
 ```
+[ã‚µãƒ³ãƒ—ãƒ«C#ã‚³ãƒ¼ãƒ‰](Sample~/SwitchSample.cs)<br />
 
-## •ÏX—š—ğ
+## å¤‰æ›´å±¥æ­´
 <pre>
 version 1.2.0
-  Profilerƒf[ƒ^‚ª‚È‚¢‚Æ‚«‚ÉANullReference@Exception‚ªo‚é–â‘è‚ğC³
-  ƒeƒNƒXƒ`ƒƒˆ³k‚Ì’Ç‰Á
-   Screenshot‚Å‚Í‚È‚­”CˆÓ‚Ì‰æ‘œ‚ğÚ‚¹‚éInterface‚Ì’Ç‰Á
-  "ScreenshotToUnityProfiler.prefab"‚Ì’Ç‰Á
+  Profilerãƒ‡ãƒ¼ã‚¿ãŒãªã„ã¨ãã«ã€NullReferenceã€€ExceptionãŒå‡ºã‚‹å•é¡Œã‚’ä¿®æ­£
+  ãƒ†ã‚¯ã‚¹ãƒãƒ£åœ§ç¸®ã®è¿½åŠ 
+   Screenshotã§ã¯ãªãä»»æ„ã®ç”»åƒã‚’è¼‰ã›ã‚‹Interfaceã®è¿½åŠ 
+  "ScreenshotToUnityProfiler.prefab"ã®è¿½åŠ 
 
 version 1.1.0
-  supportsAsyncGPUReadback‚É‘Î‰‚µ‚Ä‚¢‚È‚¢ƒP[ƒX‚Ö‚Ì‘Î‰
+  supportsAsyncGPUReadbackã«å¯¾å¿œã—ã¦ã„ãªã„ã‚±ãƒ¼ã‚¹ã¸ã®å¯¾å¿œ
 </pre>
