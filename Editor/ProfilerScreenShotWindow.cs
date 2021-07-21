@@ -170,7 +170,7 @@ namespace UTJ.SS2Profiler
 
                 if (bytes.IsCreated && bytes.Length > 16)
                 {
-                    texture = new Texture2D(info.width, info.height, GetFormat(info.compress), false);
+                    texture = new Texture2D(info.width, info.height, ScreenShotProfilerUtil.GetTextureFormat(info.compress), false);
                     switch (info.compress) {
                         case ScreenShotToProfiler.TextureCompress.None:
                         case ScreenShotToProfiler.TextureCompress.RGB_565:
@@ -189,16 +189,6 @@ namespace UTJ.SS2Profiler
             return texture;
         }
 
-        private static TextureFormat GetFormat(ScreenShotToProfiler.TextureCompress comp)
-        {
-            switch (comp)
-            {
-                case ScreenShotToProfiler.TextureCompress.RGB_565:
-                case ScreenShotToProfiler.TextureCompress.JPG:
-                    return TextureFormat.RGB565;
-            }
-            return TextureFormat.RGBA32;
-        }
 
         private void Update()
         {

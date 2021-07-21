@@ -45,7 +45,7 @@ namespace UTJ.SS2Profiler
 
         public ScreenShotLogic(int width , int height, ScreenShotToProfiler.TextureCompress comp)
         {
-            RenderTextureFormat format = GetFormat(comp);
+            RenderTextureFormat format = ScreenShotProfilerUtil.GetRenderTextureFormat(comp);
             frames = new DataInfo[FRAME_NUM];
             for (int i = 0; i < FRAME_NUM; ++i)
             {
@@ -59,17 +59,6 @@ namespace UTJ.SS2Profiler
             this.WriteToTagInfoShort(height, 6);
             this.tagInfo[12] = (byte)comp;
             this.compress = comp;
-        }
-
-        private static RenderTextureFormat GetFormat(ScreenShotToProfiler.TextureCompress comp)
-        {
-            switch (comp)
-            {
-                case ScreenShotToProfiler.TextureCompress.RGB_565:
-                case ScreenShotToProfiler.TextureCompress.JPG:
-                    return RenderTextureFormat.RGB565;
-            }
-            return RenderTextureFormat.ARGB32;
         }
 
         private void WriteToTagInfo(int val,int idx)
@@ -147,10 +136,11 @@ namespace UTJ.SS2Profiler
             {
                 this.syncUpdateSampler = CustomSampler.Create("SyncUpdate");
             }
-
+            TextureFormat textureFormat = ScreenShotProfilerUtil.GetTextureFormat(frames[idx].compress);
             syncUpdateSampler.Begin();
             if (syncTexCache != null &&
-                (syncTexCache.width != rt.width || syncTexCache.height != rt.height) )
+                (syncTexCache.width != rt.width || syncTexCache.height != rt.height || 
+                textureFormat != syncTexCache.format) )
             {
                 Object.Destroy(syncTexCache);
                 syncTexCache = null;
@@ -159,7 +149,7 @@ namespace UTJ.SS2Profiler
             Texture2D tex2d = syncTexCache;
             if (tex2d == null)
             {
-                tex2d = new Texture2D(rt.width, rt.height, TextureFormat.RGBA32, false);
+                tex2d = new Texture2D(rt.width, rt.height, textureFormat, false);
             }
             RenderTexture.active = rt;
             tex2d.ReadPixels(new Rect(0, 0, rt.width, rt.height), 0, 0);
@@ -250,7 +240,6 @@ namespace UTJ.SS2Profiler
 
         public int CaptureScreen(int id)
         { 
-
             for (int i = 0; i < FRAME_NUM; ++i)
             {
                 if (!IsAvailable(i))
@@ -272,7 +261,6 @@ namespace UTJ.SS2Profiler
             this.WriteToTagInfoShort(Screen.width, 8);
             this.WriteToTagInfoShort(Screen.height, 10);
             Profiler.EmitFrameMetaData(ScreenShotToProfiler.MetadataGuid, ScreenShotToProfiler.InfoTag, tagInfo);
-
         }
     }
 

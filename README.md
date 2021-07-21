@@ -43,6 +43,7 @@ version 1.2.0
   fix NullError when there is no data in Profiler.
   add Texture compress option.
   add RenderTexture capture instead of Screenshot.
+  add "ScreenshotToUnityProfiler.prefab"
 
 version 1.1.0
   add sync readback option for gles.
