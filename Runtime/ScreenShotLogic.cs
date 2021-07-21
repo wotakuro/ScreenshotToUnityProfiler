@@ -202,9 +202,10 @@ namespace UTJ.SS2Profiler
                         pngCompressSampler.End();
                     }
                     break;
-                case ScreenShotToProfiler.TextureCompress.JPG:
+                case ScreenShotToProfiler.TextureCompress.JPG_BufferRGB565:
+                case ScreenShotToProfiler.TextureCompress.JPG_BufferRGBA:
                     {
-                        if(jpgCompressSampler == null) { jpgCompressSampler = CustomSampler.Create("jpgCompress"); }
+                        if (jpgCompressSampler == null) { jpgCompressSampler = CustomSampler.Create("jpgCompress"); }
                         jpgCompressSampler.Begin();
                         using (var pngData = ImageConversion.EncodeNativeArrayToJPG(bytes,
                             originRt.graphicsFormat, (uint)originRt.width, (uint)originRt.height))

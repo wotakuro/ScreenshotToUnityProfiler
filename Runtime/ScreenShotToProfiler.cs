@@ -22,7 +22,8 @@ namespace UTJ.SS2Profiler
             None = 0,
             RGB_565 = 1,
             PNG = 2,
-            JPG = 3,
+            JPG_BufferRGB565 = 3,
+            JPG_BufferRGBA = 4,
         }
         public Action<RenderTexture> captureBehaviour
         {

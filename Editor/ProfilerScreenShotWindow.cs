@@ -178,7 +178,8 @@ namespace UTJ.SS2Profiler
                             texture.Apply();
                             break;
                         case ScreenShotToProfiler.TextureCompress.PNG:
-                        case ScreenShotToProfiler.TextureCompress.JPG:
+                        case ScreenShotToProfiler.TextureCompress.JPG_BufferRGB565:
+                        case ScreenShotToProfiler.TextureCompress.JPG_BufferRGBA:
                             texture.LoadImage(bytes.ToArray());
                             texture.Apply();
                             break;
