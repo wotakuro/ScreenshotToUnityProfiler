@@ -95,7 +95,7 @@ namespace UTJ.SS2Profiler
             this.behaviourGmo = new GameObject();
             this.behaviourGmo.hideFlags = HideFlags.HideAndDontSave;
             GameObject.DontDestroyOnLoad(behaviourGmo);
-            var behaviour = this.behaviourGmo.AddComponent<ScreenShotBehaviour>();
+            var behaviour = this.behaviourGmo.AddComponent<BehaviourProxy>();
 
             this.captureSampler = CustomSampler.Create("ScreenshotToProfiler.Capture");
             this.updateSampler = CustomSampler.Create("ScreenshotToProfiler.Update");

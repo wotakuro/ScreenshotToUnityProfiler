@@ -5,7 +5,7 @@ using UnityEngine;
 #if DEBUG
 namespace UTJ.SS2Profiler
 {
-    internal class ScreenShotBehaviour : MonoBehaviour
+    internal class BehaviourProxy : MonoBehaviour
     {
         public System.Action captureFunc { get; set; }
         public System.Action updateFunc { get; set; }

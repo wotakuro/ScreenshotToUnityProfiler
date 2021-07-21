@@ -22,8 +22,12 @@ openupm add com.utj.screenshot2profiler
 ```
 
 ## how to use
-1.calling this at Runtime. <br />
+1.Initialize. <br />
+Place the "ScreenShotProfiler.prefab" to the scene.<br />
+![ScreenshotToUnityProfiler](Documentation~/ScreenShotPrefab.png "Place Prefab")<br />
+(You can customize the settings at Inspector.)<br />
 
+or callling this method to Initialize.
 UTJ.SS2Profiler.ScreenShotToProfiler.Instance.Initialize(); <br />
 or <br />
 UTJ.SS2Profiler.ScreenShotToProfiler.Instance.Initialize(w,h);<br />
@@ -35,4 +39,11 @@ And then window will be displayed.
 
 ## change
 <pre>
-version 1.1.0 -> add sync readback option for gles.
+version 1.2.0
+  fix NullError when there is no data in Profiler.
+  add Texture compress option.
+  add RenderTexture capture instead of Screenshot.
+
+version 1.1.0
+  add sync readback option for gles.
+</pre>
