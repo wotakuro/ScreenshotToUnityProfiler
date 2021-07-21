@@ -1,7 +1,8 @@
 # ScreenshotToUnityProfiler
 
 [![openupm](https://img.shields.io/npm/v/com.utj.screenshot2profiler?label=openupm&registry_uri=https://package.openupm.com)](https://openupm.com/packages/com.utj.screenshot2profiler/)
-[“ú–{Œê‚Í‚±‚¿‚ç](README.ja.md)<br />
+<br />
+[æ—¥æœ¬èªã¯ã‚³ãƒãƒ©](README.ja.md)<br />
 
 ## about
 Embed Screenshot to Unity Profiler protocol.<br />
@@ -49,6 +50,8 @@ ScreenShotToProfiler.Instance.captureBehaviour = (target) => {
     Graphics.ExecuteCommandBuffer(commandBuffer);
 };
 ```
+[Whole Sample Code](Sample~/SwitchSample.cs)<br />
+
 
 ## change
 <pre>
