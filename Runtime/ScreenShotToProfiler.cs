@@ -17,7 +17,27 @@ namespace UTJ.SS2Profiler
 
         public static ScreenShotToProfiler Instance { get; private set; } = new ScreenShotToProfiler();
 
+        public enum TextureCompress:byte
+        {
+            None = 0,
+            RGB_565 = 1,
+            PNG = 2,
+            JPG_BufferRGB565 = 3,
+            JPG_BufferRGBA = 4,
+        }
+        public Action<RenderTexture> captureBehaviour
+        {
+            set
+            {
+                this.renderTextureBuffer.captureBehaviour = value;
+            }
+        }
+
 #if DEBUG
+        private const string CAPTURE_CMD_SAMPLE = "ScreenToRt";
+
+        private CommandBuffer commandBuffer;
+
         private ScreenShotLogic renderTextureBuffer;
         private GameObject behaviourGmo;
         private int frameIdx = 0;
@@ -42,6 +62,14 @@ namespace UTJ.SS2Profiler
         public bool Initialize(int width , int height,bool allowSync = false)
         {
 #if DEBUG
+            Initialize(width, height, TextureCompress.RGB_565, allowSync);
+#endif
+            return true;
+        }
+
+        public bool Initialize(int width, int height, TextureCompress compress, bool allowSync)
+        {
+#if DEBUG
             if (!SystemInfo.supportsAsyncGPUReadback)
             {
                 if (!allowSync)
@@ -52,20 +80,24 @@ namespace UTJ.SS2Profiler
                 {
                     UnityEngine.Debug.LogWarning("SystemInfo.supportsAsyncGPUReadback is false! Profiler Screenshot is very slow...");
                 }
+                compress = ScreenShotProfilerUtil.FallbackAtNoGPUAsync(compress);
             }
             if (renderTextureBuffer != null) { return false; }
-            InitializeLogic(width,height);
+            InitializeLogic(width, height, compress);
 #endif
             return true;
         }
-        private void InitializeLogic(int width,int height)
+
+
+        private void InitializeLogic(int width,int height,TextureCompress compress)
         {
 #if DEBUG
-            renderTextureBuffer = new ScreenShotLogic(width, height);
-            var behaviourGmo = new GameObject();
-            behaviourGmo.hideFlags = HideFlags.HideAndDontSave;
+            renderTextureBuffer = new ScreenShotLogic(width, height, compress);
+            renderTextureBuffer.captureBehaviour = this.DefaultCaptureBehaviour;
+            this.behaviourGmo = new GameObject();
+            this.behaviourGmo.hideFlags = HideFlags.HideAndDontSave;
             GameObject.DontDestroyOnLoad(behaviourGmo);
-            var behaviour = behaviourGmo.AddComponent<ScreenShotBehaviour>();
+            var behaviour = this.behaviourGmo.AddComponent<BehaviourProxy>();
 
             this.captureSampler = CustomSampler.Create("ScreenshotToProfiler.Capture");
             this.updateSampler = CustomSampler.Create("ScreenshotToProfiler.Update");
@@ -111,6 +143,26 @@ namespace UTJ.SS2Profiler
             captureSampler.End();
         }
 #endif
+
+        public void DefaultCaptureBehaviour(RenderTexture target)
+        {
+#if DEBUG
+            if (commandBuffer == null)
+            {
+                commandBuffer = new CommandBuffer();
+                commandBuffer.name = "ScreenCapture";
+            }
+            commandBuffer.Clear();
+            var rt = RenderTexture.GetTemporary(Screen.width, Screen.height, 0, RenderTextureFormat.ARGB32);
+            ScreenCapture.CaptureScreenshotIntoRenderTexture(rt);
+            commandBuffer.BeginSample(CAPTURE_CMD_SAMPLE);
+            commandBuffer.Blit(rt,  target);
+            commandBuffer.EndSample(CAPTURE_CMD_SAMPLE);
+            Graphics.ExecuteCommandBuffer(commandBuffer);
+            RenderTexture.ReleaseTemporary(rt);
+            commandBuffer.Clear();
+#endif
+        }
 
     }
 

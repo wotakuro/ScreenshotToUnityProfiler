@@ -2,6 +2,9 @@
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Profiling;
+using Unity.Collections;
+using UnityEngine.Experimental.Rendering;
+using Unity.Collections.LowLevel.Unsafe;
 
 #if DEBUG
 namespace UTJ.SS2Profiler
@@ -11,7 +14,6 @@ namespace UTJ.SS2Profiler
     {
 
         private const int FRAME_NUM = 8;
-        private const string CAPTURE_CMD_SAMPLE = "ScreenToRt";
 
         private struct DataInfo
         {
@@ -19,6 +21,7 @@ namespace UTJ.SS2Profiler
             public int id;
             public bool isRequest;
             public int fromEnd;
+            public ScreenShotToProfiler.TextureCompress compress;
         }
         private struct RequestInfo
         {
@@ -29,24 +32,33 @@ namespace UTJ.SS2Profiler
         private Queue<RequestInfo> requests = new Queue<RequestInfo>();
         private DataInfo[] frames;
         private byte[] tagInfo;
-        private CommandBuffer commandBuffer;
 
         private Texture2D syncTexCache;
         private CustomSampler syncUpdateSampler;
 
-        public ScreenShotLogic(int width , int height)
+        private CustomSampler rgbCompressSampler;
+        private CustomSampler pngCompressSampler;
+        private CustomSampler jpgCompressSampler;
+        private ScreenShotToProfiler.TextureCompress compress;
+
+        public System.Action<RenderTexture> captureBehaviour { get; set; }
+
+        public ScreenShotLogic(int width , int height, ScreenShotToProfiler.TextureCompress comp)
         {
+            RenderTextureFormat format = ScreenShotProfilerUtil.GetRenderTextureFormat(comp);
             frames = new DataInfo[FRAME_NUM];
             for (int i = 0; i < FRAME_NUM; ++i)
             {
-                frames[i].renderTexture = new RenderTexture(width, height, 0);
+                frames[i].renderTexture = new RenderTexture(width, height, 0, format);
                 frames[i].renderTexture.name = "ss2profiler_" + i;
                 frames[i].isRequest = false;
                 frames[i].fromEnd = 5;
             }
-            this.tagInfo = new byte[12];
+            this.tagInfo = new byte[16];
             this.WriteToTagInfoShort(width, 4);
             this.WriteToTagInfoShort(height, 6);
+            this.tagInfo[12] = (byte)comp;
+            this.compress = comp;
         }
 
         private void WriteToTagInfo(int val,int idx)
@@ -96,9 +108,10 @@ namespace UTJ.SS2Profiler
                 }
                 else if (req.request.done)
                 {
+                    var data = req.request.GetData<byte>();
+                    this.EmitCaptureBodyData( frames[idx].compress,frames[idx].id, data,
+                        frames[idx].renderTexture);
 
-                    Profiler.EmitFrameMetaData(ScreenShotToProfiler.MetadataGuid, 
-                        frames[idx].id , req.request.GetData<byte>());
                     frames[idx].isRequest = false;
                     frames[idx].fromEnd = 0;
 
@@ -123,10 +136,11 @@ namespace UTJ.SS2Profiler
             {
                 this.syncUpdateSampler = CustomSampler.Create("SyncUpdate");
             }
-
+            TextureFormat textureFormat = ScreenShotProfilerUtil.GetTextureFormat(frames[idx].compress);
             syncUpdateSampler.Begin();
             if (syncTexCache != null &&
-                (syncTexCache.width != rt.width || syncTexCache.height != rt.height) )
+                (syncTexCache.width != rt.width || syncTexCache.height != rt.height || 
+                textureFormat != syncTexCache.format) )
             {
                 Object.Destroy(syncTexCache);
                 syncTexCache = null;
@@ -135,20 +149,74 @@ namespace UTJ.SS2Profiler
             Texture2D tex2d = syncTexCache;
             if (tex2d == null)
             {
-                tex2d = new Texture2D(rt.width, rt.height, TextureFormat.RGBA32, false);
+                tex2d = new Texture2D(rt.width, rt.height, textureFormat, false);
             }
             RenderTexture.active = rt;
             tex2d.ReadPixels(new Rect(0, 0, rt.width, rt.height), 0, 0);
             tex2d.Apply();
             var bytes =  tex2d.GetRawTextureData<byte>();
-            Profiler.EmitFrameMetaData(ScreenShotToProfiler.MetadataGuid,
-                frames[idx].id, bytes);
+            
+            this.EmitCaptureBodyData( frames[idx].compress, frames[idx].id, bytes,
+                frames[idx].renderTexture);
 
             syncTexCache = tex2d;
 
             frames[idx].isRequest = false;
             frames[idx].fromEnd = 0;
             syncUpdateSampler.End();
+        }
+
+        private unsafe NativeArray<byte> ConvertToRGBData(NativeArray<byte> bytes,int pixel)
+        {
+            if(rgbCompressSampler == null) { rgbCompressSampler = CustomSampler.Create("RGBCompress"); }
+            rgbCompressSampler.Begin();
+            void* bytesHead = NativeArrayUnsafeUtility.GetUnsafePtr(bytes);
+
+
+            NativeArray<byte> data = 
+                NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<byte>(bytesHead, pixel * 3, Allocator.None);
+            rgbCompressSampler.End();
+            return data;
+        }
+
+
+        private void EmitCaptureBodyData(ScreenShotToProfiler.TextureCompress comp,int id, 
+            NativeArray<byte> bytes, RenderTexture originRt)
+        {
+            switch (comp) {
+                case ScreenShotToProfiler.TextureCompress.None:
+                    Profiler.EmitFrameMetaData(ScreenShotToProfiler.MetadataGuid, id, bytes);
+                    break;
+                case ScreenShotToProfiler.TextureCompress.RGB_565:
+                    Profiler.EmitFrameMetaData(ScreenShotToProfiler.MetadataGuid, id, bytes);
+                    break;
+                case ScreenShotToProfiler.TextureCompress.PNG:
+                    {
+                        if (pngCompressSampler == null) { pngCompressSampler = CustomSampler.Create("pngCompress"); }
+                        pngCompressSampler.Begin();
+                        using (var pngData = ImageConversion.EncodeNativeArrayToPNG(bytes,
+                            originRt.graphicsFormat, (uint)originRt.width, (uint)originRt.height))
+                        {
+                            Profiler.EmitFrameMetaData(ScreenShotToProfiler.MetadataGuid, id, pngData);
+                        }
+                        pngCompressSampler.End();
+                    }
+                    break;
+                case ScreenShotToProfiler.TextureCompress.JPG_BufferRGB565:
+                case ScreenShotToProfiler.TextureCompress.JPG_BufferRGBA:
+                    {
+                        if (jpgCompressSampler == null) { jpgCompressSampler = CustomSampler.Create("jpgCompress"); }
+                        jpgCompressSampler.Begin();
+                        using (var pngData = ImageConversion.EncodeNativeArrayToJPG(bytes,
+                            originRt.graphicsFormat, (uint)originRt.width, (uint)originRt.height))
+                        {
+                            Profiler.EmitFrameMetaData(ScreenShotToProfiler.MetadataGuid, id, pngData);
+                        }
+                        jpgCompressSampler.End();
+                    }
+                    break;
+            }
+
         }
 
         public void AsyncReadbackRequestAtIdx(int idx)
@@ -173,29 +241,17 @@ namespace UTJ.SS2Profiler
 
         public int CaptureScreen(int id)
         { 
-            if(commandBuffer == null) { 
-                commandBuffer = new CommandBuffer();
-                commandBuffer.name = "ScreenCapture";
-            }
-            commandBuffer.Clear();
-
             for (int i = 0; i < FRAME_NUM; ++i)
             {
                 if (!IsAvailable(i))
                 {
                     continue;
                 }
+                if(captureBehaviour == null) { continue; }
                 frames[i].id = id;
+                frames[i].compress = this.compress;
                 WriteTagMetaData(id);
-
-                var rt = RenderTexture.GetTemporary(Screen.width, Screen.height, 0, RenderTextureFormat.ARGB32);                
-                ScreenCapture.CaptureScreenshotIntoRenderTexture(rt);
-                commandBuffer.BeginSample(CAPTURE_CMD_SAMPLE);
-                commandBuffer.Blit(rt, frames[i].renderTexture);
-                commandBuffer.EndSample(CAPTURE_CMD_SAMPLE);
-                Graphics.ExecuteCommandBuffer(commandBuffer);
-                RenderTexture.ReleaseTemporary(rt);
-                commandBuffer.Clear();
+                captureBehaviour(frames[i].renderTexture);
                 return i;
             }
             return -1;
@@ -206,7 +262,6 @@ namespace UTJ.SS2Profiler
             this.WriteToTagInfoShort(Screen.width, 8);
             this.WriteToTagInfoShort(Screen.height, 10);
             Profiler.EmitFrameMetaData(ScreenShotToProfiler.MetadataGuid, ScreenShotToProfiler.InfoTag, tagInfo);
-
         }
     }
 

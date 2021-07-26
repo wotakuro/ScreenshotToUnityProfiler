@@ -19,6 +19,7 @@ namespace UTJ.SS2Profiler
             public int height;
             public int originWidth;
             public int originHeight;
+            public ScreenShotToProfiler.TextureCompress compress;
         }
         private enum OutputMode:int
         {
@@ -51,7 +52,7 @@ namespace UTJ.SS2Profiler
         private void OnEnable()
         {
             drawTextureInfo = new FlipYTextureResolver();
-            Reflesh(GetProfilerActiveFrame());
+            Refresh(GetProfilerActiveFrame());
         }
         private void OnDisable()
         {
@@ -66,7 +67,7 @@ namespace UTJ.SS2Profiler
             }
         }
 
-        private void Reflesh(int frameIdx,bool force = false)
+        private void Refresh(int frameIdx,bool force = false)
         {
             if(lastPreviewFrameIdx == frameIdx && !force)
             {
@@ -74,7 +75,7 @@ namespace UTJ.SS2Profiler
             }
             HierarchyFrameDataView hierarchyFrameDataView =
                 ProfilerDriver.GetHierarchyFrameDataView(frameIdx, 0, HierarchyFrameDataView.ViewModes.Default, 0, false); ;
-            if(hierarchyFrameDataView == null) { return; }
+            if(hierarchyFrameDataView == null || !hierarchyFrameDataView.valid) { return; }
             NativeArray<byte> bytes =
                 hierarchyFrameDataView.GetFrameMetaData<byte>(ScreenShotToProfiler.MetadataGuid, ScreenShotToProfiler.InfoTag);
             if (bytes != null && bytes.Length >= 12)
@@ -127,6 +128,14 @@ namespace UTJ.SS2Profiler
             info.height = GetShortData(data, 6);
             info.originWidth = GetShortData(data, 8);
             info.originHeight = GetShortData(data, 10);
+            if (data.Length > 12)
+            {
+                info.compress = (ScreenShotToProfiler.TextureCompress)data[12];
+            }
+            else
+            {
+                info.compress = ScreenShotToProfiler.TextureCompress.None;
+            }
             return info;
         }
         private int GetIntData(NativeArray<byte> data, int idx)
@@ -152,23 +161,35 @@ namespace UTJ.SS2Profiler
             {
                 HierarchyFrameDataView hierarchyFrameDataView =
                     ProfilerDriver.GetHierarchyFrameDataView(i, 0, HierarchyFrameDataView.ViewModes.Default, 0, false);
-                if( hierarchyFrameDataView == null)
+                if( hierarchyFrameDataView == null || !hierarchyFrameDataView.valid)
                 {
                     continue;
                 }
                 NativeArray<byte> bytes =
                     hierarchyFrameDataView.GetFrameMetaData<byte>(ScreenShotToProfiler.MetadataGuid, info.id);
-                
-                if( bytes.IsCreated && bytes.Length > 16  )
+
+                if (bytes.IsCreated && bytes.Length > 16)
                 {
-                    texture = new Texture2D(info.width, info.height,TextureFormat.RGBA32,false);
-                    texture.LoadRawTextureData(bytes);
-                    texture.Apply();
+                    texture = new Texture2D(info.width, info.height, ScreenShotProfilerUtil.GetTextureFormat(info.compress), false);
+                    switch (info.compress) {
+                        case ScreenShotToProfiler.TextureCompress.None:
+                        case ScreenShotToProfiler.TextureCompress.RGB_565:
+                            texture.LoadRawTextureData(bytes);
+                            texture.Apply();
+                            break;
+                        case ScreenShotToProfiler.TextureCompress.PNG:
+                        case ScreenShotToProfiler.TextureCompress.JPG_BufferRGB565:
+                        case ScreenShotToProfiler.TextureCompress.JPG_BufferRGBA:
+                            texture.LoadImage(bytes.ToArray());
+                            texture.Apply();
+                            break;
+                    }
                     break;
                 }
             }
             return texture;
         }
+
 
         private void Update()
         {
@@ -176,7 +197,7 @@ namespace UTJ.SS2Profiler
             var frameIdx = this.GetProfilerActiveFrame();
             if( lastPreviewFrameIdx != frameIdx)
             {
-                this.Reflesh(frameIdx);
+                this.Refresh(frameIdx);
                 this.Repaint();
             }
         }
@@ -189,7 +210,7 @@ namespace UTJ.SS2Profiler
             {
                 if (GUILayout.Button("Reflesh",GUILayout.Width(100)))
                 {
-                    this.Reflesh(GetProfilerActiveFrame(),true);
+                    this.Refresh(GetProfilerActiveFrame(),true);
                 }
             }
             EditorGUILayout.BeginHorizontal();
