@@ -12,6 +12,7 @@ namespace UTJ.SS2Profiler.Editor
     [ProfilerModuleMetadata("ScreenShot")]
     public class ProfilerWindowScreenShotModule : ProfilerModule
     {
+        internal bool yFlip = true;
 
         static readonly ProfilerCounterDescriptor[] k_ChartCounters = new ProfilerCounterDescriptor[]
         {
@@ -24,7 +25,7 @@ namespace UTJ.SS2Profiler.Editor
         }
         public override ProfilerModuleViewController CreateDetailsViewController()
         {
-            return new ScreenShotModuleDetailsViewController(this.ProfilerWindow);
+            return new ScreenShotModuleDetailsViewController(this,this.ProfilerWindow);
         }
 
     }
@@ -33,14 +34,21 @@ namespace UTJ.SS2Profiler.Editor
 
     public class ScreenShotModuleDetailsViewController : ProfilerModuleViewController
     {
-        public ScreenShotModuleDetailsViewController(ProfilerWindow profilerWindow) : base(profilerWindow) {
-            this.ProfilerWindow.SelectedFrameIndexChanged += OnSelectedFrameIndexChanged;
-        }
+        private ProfilerWindowScreenShotModule screenShotModule;
         private Toggle yFlipToggle;
         private DropdownField sizeField;
         private IMGUIContainer imageBody;
         private Texture2D screenshotTexture;
         private TagInfo currentTagInfo;
+
+
+        public ScreenShotModuleDetailsViewController(
+            ProfilerWindowScreenShotModule module,
+            ProfilerWindow profilerWindow) : base(profilerWindow) 
+        {
+            this.screenShotModule = module;
+            this.ProfilerWindow.SelectedFrameIndexChanged += OnSelectedFrameIndexChanged;
+        }
 
         protected override VisualElement CreateView()
         {
@@ -61,6 +69,8 @@ namespace UTJ.SS2Profiler.Editor
             choices.Add("FitWindow");
 
             yFlipToggle = ve.Q<Toggle>("FlipYToggle");
+            yFlipToggle.value = screenShotModule.yFlip;
+
             sizeField = ve.Q<DropdownField>("SizeMode");
             sizeField.choices = choices;
             sizeField.index = 0;
@@ -83,8 +93,8 @@ namespace UTJ.SS2Profiler.Editor
             bool yFlip = this.yFlipToggle.value;
             var rect = new Rect(10, 10, currentTagInfo.width, currentTagInfo.height);
 
-            Debug.Log(this.imageBody.contentRect);
-
+            screenShotModule.yFlip = yFlipToggle.value;
+            
             if (yFlip)
             {
                 rect.y += rect.height;
