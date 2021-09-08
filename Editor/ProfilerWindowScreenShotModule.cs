@@ -38,8 +38,9 @@ namespace UTJ.SS2Profiler.Editor
         }
         private Toggle yFlipToggle;
         private DropdownField sizeField;
-        private VisualElement imageBody;
+        private IMGUIContainer imageBody;
         private Texture2D screenshotTexture;
+        private TagInfo currentTagInfo;
 
         protected override VisualElement CreateView()
         {
@@ -47,14 +48,23 @@ namespace UTJ.SS2Profiler.Editor
             var tree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(path);
             var element = tree.CloneTree();
             InitVisualElement(element);
+            this.OnSelectedFrameIndexChanged(ProfilerWindow.selectedFrameIndex);
             return element;
         }
 
         private void InitVisualElement(VisualElement ve)
         {
+            var choices = new System.Collections.Generic.List<string>();
+            choices.Add("Origin");
+            choices.Add("FitWindow");
+
             yFlipToggle = ve.Q<Toggle>("FlipYToggle");
             sizeField = ve.Q<DropdownField>("SizeMode");
-            imageBody = ve.Q<VisualElement>("ImageBody");
+            sizeField.choices = choices;
+            sizeField.index = 0;
+
+            imageBody = ve.Q<IMGUIContainer>("TextureOutIMGUI");
+            imageBody.onGUIHandler += OnGUITextureOut;
         }
 
         protected override void Dispose(bool disposing)
@@ -66,29 +76,32 @@ namespace UTJ.SS2Profiler.Editor
             base.Dispose(disposing);
         }
 
-        void OnSelectedFrameIndexChanged(long selectedFrameIndex) {
-            Debug.Log("OnSelectedFrameChanged " + (imageBody == null));
-            if (imageBody == null)
-            {
-                return;
-            }
-            int idx = (int)selectedFrameIndex;
-            TagInfo tagInfo;
+        private void OnGUITextureOut()
+        {
+            bool yFlip = this.yFlipToggle.value;
+            var rect = new Rect(10, 10, currentTagInfo.width, currentTagInfo.height);
 
-            if (ProfilerScreenShotEditorLogic.TryGetTagInfo(idx, out tagInfo))
+            if (yFlip)
+            {
+                rect.y += rect.height;
+                rect.height = -rect.height;
+            }
+            if (screenshotTexture)
+            {
+                EditorGUI.DrawTextureTransparent(rect, screenshotTexture);
+            }        
+        }
+
+        void OnSelectedFrameIndexChanged(long selectedFrameIndex) {
+            int idx = (int)selectedFrameIndex;
+
+            if (ProfilerScreenShotEditorLogic.TryGetTagInfo(idx, out currentTagInfo))
             {
                 if (screenshotTexture)
                 {
                     UnityEngine.Object.DestroyImmediate(screenshotTexture);
                 }
-                screenshotTexture = ProfilerScreenShotEditorLogic.GenerateTagTexture(tagInfo, idx);
-                imageBody.style.backgroundImage = this.screenshotTexture;
-                imageBody.style.width = tagInfo.width*3;
-                imageBody.style.height = tagInfo.height*3;
-            }
-            else
-            {
-                imageBody.style.backgroundImage = null;
+                screenshotTexture = ProfilerScreenShotEditorLogic.GenerateTagTexture(currentTagInfo, idx);
             }
 
         }
