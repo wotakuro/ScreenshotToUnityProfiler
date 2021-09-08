@@ -49,6 +49,8 @@ namespace UTJ.SS2Profiler.Editor
             var element = tree.CloneTree();
             InitVisualElement(element);
             this.OnSelectedFrameIndexChanged(ProfilerWindow.selectedFrameIndex);
+
+            element.style.height = new StyleLength(Length.Percent(100.0f));
             return element;
         }
 
@@ -80,6 +82,8 @@ namespace UTJ.SS2Profiler.Editor
         {
             bool yFlip = this.yFlipToggle.value;
             var rect = new Rect(10, 10, currentTagInfo.width, currentTagInfo.height);
+
+            Debug.Log(this.imageBody.contentRect);
 
             if (yFlip)
             {
