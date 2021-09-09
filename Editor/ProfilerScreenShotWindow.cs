@@ -169,7 +169,24 @@ namespace UTJ.SS2Profiler.Editor
 
             return r;
         }
+#if UNITY_2021_2_OR_NEWER
 
+        private int GetProfilerActiveFrame()
+        {
+            var window = GetProfilerWindow();
+            if (window == null) { return -1; }
+            return (int)window.selectedFrameIndex;
+
+        }
+        private static ProfilerWindow GetProfilerWindow() {
+            ProfilerWindow[] windows = Resources.FindObjectsOfTypeAll<ProfilerWindow>();
+            if( windows.Length > 0)
+            {
+                return windows[0];
+            }
+            return null;
+        }
+#else
         private int GetProfilerActiveFrame()
         {
             var window = GetProfilerWindow();
@@ -196,5 +213,6 @@ namespace UTJ.SS2Profiler.Editor
             return profilerWindow;
 
         }
+#endif
     }
 }
