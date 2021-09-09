@@ -13,6 +13,7 @@ namespace UTJ.SS2Profiler.Editor
     public class ProfilerWindowScreenShotModule : ProfilerModule
     {
         internal bool yFlip = true;
+        internal int sizeIndex = 0;
 
         static readonly ProfilerCounterDescriptor[] k_ChartCounters = new ProfilerCounterDescriptor[]
         {
@@ -41,6 +42,12 @@ namespace UTJ.SS2Profiler.Editor
         private Texture2D screenshotTexture;
         private TagInfo currentTagInfo;
 
+        private enum EOutputMode:byte
+        {
+            FitWindow = 0,
+            Origin = 1,
+        }
+
 
         public ScreenShotModuleDetailsViewController(
             ProfilerWindowScreenShotModule module,
@@ -65,15 +72,15 @@ namespace UTJ.SS2Profiler.Editor
         private void InitVisualElement(VisualElement ve)
         {
             var choices = new System.Collections.Generic.List<string>();
-            choices.Add("Origin");
             choices.Add("FitWindow");
+            choices.Add("Origin");
 
             yFlipToggle = ve.Q<Toggle>("FlipYToggle");
             yFlipToggle.value = screenShotModule.yFlip;
 
             sizeField = ve.Q<DropdownField>("SizeMode");
             sizeField.choices = choices;
-            sizeField.index = 0;
+            sizeField.index = screenShotModule.sizeIndex;
 
             imageBody = ve.Q<IMGUIContainer>("TextureOutIMGUI");
             imageBody.onGUIHandler += OnGUITextureOut;
@@ -94,6 +101,16 @@ namespace UTJ.SS2Profiler.Editor
             var rect = new Rect(10, 10, currentTagInfo.width, currentTagInfo.height);
 
             screenShotModule.yFlip = yFlipToggle.value;
+            screenShotModule.sizeIndex = sizeField.index;
+
+            if ( this.sizeField.index == (int)EOutputMode.FitWindow)
+            {
+                rect = FitWindowSize(currentTagInfo,
+                    new Rect(10, 10, 
+                    this.imageBody.contentRect.width,
+                    this.imageBody.contentRect.height));
+            }
+
             
             if (yFlip)
             {
@@ -105,8 +122,24 @@ namespace UTJ.SS2Profiler.Editor
                 EditorGUI.DrawTextureTransparent(rect, screenshotTexture);
             }        
         }
+        private Rect FitWindowSize(TagInfo tag , Rect areaRect) {
+            float xparam = (areaRect.width - (areaRect.x * 2.0f) )/(float)tag.originWidth;
+            float yparam = (areaRect.height - (areaRect.y * 2.0f) )/(float)tag.originHeight;
 
-        void OnSelectedFrameIndexChanged(long selectedFrameIndex) {
+            if (xparam > yparam)
+            {
+                areaRect.width = tag.originWidth*yparam;
+                areaRect.height = tag.originHeight*yparam;
+            }
+            else
+            {
+                areaRect.width = tag.originWidth * xparam;
+                areaRect.height = tag.originHeight*xparam;
+            }
+            return areaRect;
+        }
+
+        private void OnSelectedFrameIndexChanged(long selectedFrameIndex) {
             int idx = (int)selectedFrameIndex;
 
             if (ProfilerScreenShotEditorLogic.TryGetTagInfo(idx, out currentTagInfo))
