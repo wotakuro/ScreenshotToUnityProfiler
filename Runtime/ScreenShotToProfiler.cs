@@ -29,7 +29,9 @@ namespace UTJ.SS2Profiler
         {
             set
             {
+#if DEBUG
                 this.renderTextureBuffer.captureBehaviour = value;
+#endif
             }
         }
 

@@ -55,6 +55,9 @@ ScreenShotToProfiler.Instance.captureBehaviour = (target) => {
 
 ## change
 <pre>
+version 1.2.1
+  fix release build error 
+
 version 1.2.0
   fix NullError when there is no data in Profiler.
   add Texture compress option.
