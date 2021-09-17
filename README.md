@@ -55,6 +55,9 @@ ScreenShotToProfiler.Instance.captureBehaviour = (target) => {
 
 ## change
 <pre>
+version 1.3.0
+  Add custom ProfilerModule for Unity 2021.2 or lator.
+
 version 1.2.1
   fix release build error 
 
