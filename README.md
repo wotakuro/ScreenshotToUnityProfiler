@@ -9,7 +9,7 @@ Embed Screenshot to Unity Profiler protocol.<br />
 ![ScreenshotToUnityProfiler](Documentation~/image.gif "ScreenshotToUnityProfiler")
 
 ## requirement
-- 2019.3 or newer.<br />
+- 2019.4 or newer.<br />
 
 ## reccomend
 - the platforms that supports System.supportsAsyncGPUReadback (Mobile vulkan or metal....)<br />
