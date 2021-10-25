@@ -7,7 +7,7 @@ Unity Profiler上に、Screenshotを載せることが出来ます.<br />
 ![ScreenshotToUnityProfiler](Documentation~/image.gif "ScreenshotToUnityProfiler")
 
 ## 必要な環境
-- Unity 2019.3以上.<br />
+- Unity 2019.4以上.<br />
 
 ## 推奨環境
 - System.supportsAsyncGPUReadbackをサポートしている環境 (モバイルでは vulkan または metal。※2021.2以降であればGLES3でも可)<br />
