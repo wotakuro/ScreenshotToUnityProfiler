@@ -7,7 +7,7 @@ Unity Profiler上に、Screenshotを載せることが出来ます.<br />
 ![ScreenshotToUnityProfiler](Documentation~/image.gif "ScreenshotToUnityProfiler")
 
 ## 必要な環境
-- Unity 2019.3以上.<br />
+- Unity 2019.4以上.<br />
 
 ## 推奨環境
 - System.supportsAsyncGPUReadbackをサポートしている環境 (モバイルでは vulkan または metal。※2021.2以降であればGLES3でも可)<br />
@@ -52,6 +52,12 @@ ScreenShotToProfiler.Instance.captureBehaviour = (target) => {
 
 ## 変更履歴
 <pre>
+version 1.3.0
+  Unity 2021.2以降向けにProfilerのカスタムModuleを追加
+
+version 1.2.1
+  リリースビルド時にエラーが出てしまっていたので修正
+
 version 1.2.0
   Profilerデータがないときに、NullReference　Exceptionが出る問題を修正
   テクスチャ圧縮の追加

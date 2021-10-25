@@ -9,7 +9,7 @@ Embed Screenshot to Unity Profiler protocol.<br />
 ![ScreenshotToUnityProfiler](Documentation~/image.gif "ScreenshotToUnityProfiler")
 
 ## requirement
-- 2019.3 or newer.<br />
+- 2019.4 or newer.<br />
 
 ## reccomend
 - the platforms that supports System.supportsAsyncGPUReadback (Mobile vulkan or metal....)<br />
@@ -55,6 +55,9 @@ ScreenShotToProfiler.Instance.captureBehaviour = (target) => {
 
 ## change
 <pre>
+version 1.3.0
+  Add custom ProfilerModule for Unity 2021.2 or lator.
+
 version 1.2.1
   fix release build error 
 
