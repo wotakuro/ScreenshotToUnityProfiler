@@ -112,7 +112,6 @@ namespace UTJ.SS2Profiler.Editor
             colorSpaceField = ve.Q<DropdownField>("ColorSpaceMode");
             colorSpaceField.choices = colorSpaceChoices;
             colorSpaceField.index = screenShotModule.colorSpaceIndex;
-            Debug.Log(colorSpaceField.name);
 
             imageBody = ve.Q<IMGUIContainer>("TextureOutIMGUI");
             imageBody.onGUIHandler += OnGUITextureOut;
@@ -154,7 +153,6 @@ namespace UTJ.SS2Profiler.Editor
                 if (drawMaterial)
                 {
                     drawMaterial.mainTexture = screenshotTexture;
-                    Debug.Log(drawMaterial.shader);
                     EditorGUI.DrawPreviewTexture(rect, screenshotTexture, drawMaterial);
                 }
                 else
