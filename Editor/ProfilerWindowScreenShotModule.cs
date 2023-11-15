@@ -14,6 +14,21 @@ namespace UTJ.SS2Profiler.Editor
     {
         internal bool yFlip = true;
         internal int sizeIndex = 0;
+        internal int colorSpaceIndex = 0;
+
+        private Material drawMaterialObj;
+        internal Material drawMaterial
+        {
+            get
+            {
+                if (!this.drawMaterialObj)
+                {
+                    Shader shader = AssetDatabase.LoadAssetAtPath<Shader>("Packages/com.utj.screenshot2profiler/Editor/Shader/DebugColorSpace.shader");
+                    this.drawMaterialObj = new Material(shader);
+                }
+                return drawMaterialObj;
+            }
+        }
 
         static readonly ProfilerCounterDescriptor[] k_ChartCounters = new ProfilerCounterDescriptor[]
         {
@@ -38,6 +53,7 @@ namespace UTJ.SS2Profiler.Editor
         private ProfilerWindowScreenShotModule screenShotModule;
         private Toggle yFlipToggle;
         private DropdownField sizeField;
+        private DropdownField colorSpaceField;
         private IMGUIContainer imageBody;
         private Texture2D screenshotTexture;
         private TagInfo currentTagInfo;
@@ -46,6 +62,13 @@ namespace UTJ.SS2Profiler.Editor
         {
             FitWindow = 0,
             Origin = 1,
+        }
+
+        private enum EColorSpaceMode : byte
+        {
+            NoConvert,
+            LinearToGamma,
+            GammaToLinear,
         }
 
 
@@ -71,16 +94,25 @@ namespace UTJ.SS2Profiler.Editor
 
         private void InitVisualElement(VisualElement ve)
         {
-            var choices = new System.Collections.Generic.List<string>();
-            choices.Add("FitWindow");
-            choices.Add("Origin");
+            var sizeChoices = new System.Collections.Generic.List<string>();
+            sizeChoices.Add("FitWindow");
+            sizeChoices.Add("Origin");
+            var colorSpaceChoices = new System.Collections.Generic.List<string>();
+            colorSpaceChoices.Add("No Convert");
+            colorSpaceChoices.Add("Gamma->Linear");
+            colorSpaceChoices.Add("Linear->Gamma");
 
             yFlipToggle = ve.Q<Toggle>("FlipYToggle");
             yFlipToggle.value = screenShotModule.yFlip;
 
             sizeField = ve.Q<DropdownField>("SizeMode");
-            sizeField.choices = choices;
+            sizeField.choices = sizeChoices;
             sizeField.index = screenShotModule.sizeIndex;
+
+            colorSpaceField = ve.Q<DropdownField>("ColorSpaceMode");
+            colorSpaceField.choices = colorSpaceChoices;
+            colorSpaceField.index = screenShotModule.colorSpaceIndex;
+            Debug.Log(colorSpaceField.name);
 
             imageBody = ve.Q<IMGUIContainer>("TextureOutIMGUI");
             imageBody.onGUIHandler += OnGUITextureOut;
@@ -102,25 +134,34 @@ namespace UTJ.SS2Profiler.Editor
 
             screenShotModule.yFlip = yFlipToggle.value;
             screenShotModule.sizeIndex = sizeField.index;
+            screenShotModule.colorSpaceIndex = colorSpaceField.index;
 
-            if ( this.sizeField.index == (int)EOutputMode.FitWindow)
+            if (this.sizeField.index == (int)EOutputMode.FitWindow)
             {
                 rect = FitWindowSize(currentTagInfo,
-                    new Rect(10, 10, 
+                    new Rect(10, 10,
                     this.imageBody.contentRect.width,
                     this.imageBody.contentRect.height));
             }
 
-            
-            if (yFlip)
-            {
-                rect.y += rect.height;
-                rect.height = -rect.height;
-            }
+
             if (screenshotTexture)
             {
-                EditorGUI.DrawTextureTransparent(rect, screenshotTexture);
-            }        
+                var drawMaterial = screenShotModule.drawMaterial;
+                var mode = (EColorSpaceMode)this.colorSpaceField.index;
+                this.SetupColorSpaceKeyword(drawMaterial, mode);
+                this.SetYFlip(drawMaterial, yFlip);
+                if (drawMaterial)
+                {
+                    drawMaterial.mainTexture = screenshotTexture;
+                    Debug.Log(drawMaterial.shader);
+                    EditorGUI.DrawPreviewTexture(rect, screenshotTexture, drawMaterial);
+                }
+                else
+                {
+                    EditorGUI.DrawPreviewTexture(rect, screenshotTexture);
+                }
+            }
         }
         private Rect FitWindowSize(TagInfo tag , Rect areaRect) {
             float xparam = (areaRect.width - (areaRect.x * 2.0f) )/(float)tag.originWidth;
@@ -151,6 +192,43 @@ namespace UTJ.SS2Profiler.Editor
                 screenshotTexture = ProfilerScreenShotEditorLogic.GenerateTagTexture(currentTagInfo, idx);
             }
 
+        }
+
+
+        private void SetYFlip(Material mat, bool flag)
+        {
+            const string Keyword = "FLIP_Y";
+            if (mat)
+            {
+                if (flag)
+                {
+                    mat.EnableKeyword(Keyword);
+                }
+                else
+                {
+                    mat.DisableKeyword(Keyword);
+                }
+            }
+        }
+
+        private void SetupColorSpaceKeyword(Material mat,EColorSpaceMode mode)
+        {
+            if (!mat) { return; }
+            switch (mode)
+            {
+                case EColorSpaceMode.NoConvert:
+                    mat.DisableKeyword("LINEAR_TO_GAMMMA");
+                    mat.DisableKeyword("GAMMA_TO_LINEAR");
+                    break;
+                case EColorSpaceMode.LinearToGamma:
+                    mat.DisableKeyword("LINEAR_TO_GAMMMA");
+                    mat.EnableKeyword("GAMMA_TO_LINEAR");
+                    break;
+                case EColorSpaceMode.GammaToLinear:
+                    mat.DisableKeyword("GAMMA_TO_LINEAR");
+                    mat.EnableKeyword("LINEAR_TO_GAMMMA");
+                    break;
+            }
         }
 
 
