@@ -66,9 +66,9 @@ namespace UTJ.SS2Profiler.Editor
 
         private enum EColorSpaceMode : byte
         {
-            NoConvert,
-            LinearToGamma,
-            GammaToLinear,
+            NoConvert = 0,
+            LinearToGamma=1,
+            GammaToLinear=2,
         }
 
 
@@ -219,12 +219,12 @@ namespace UTJ.SS2Profiler.Editor
                     mat.DisableKeyword("GAMMA_TO_LINEAR");
                     break;
                 case EColorSpaceMode.LinearToGamma:
-                    mat.DisableKeyword("LINEAR_TO_GAMMMA");
-                    mat.EnableKeyword("GAMMA_TO_LINEAR");
-                    break;
-                case EColorSpaceMode.GammaToLinear:
                     mat.DisableKeyword("GAMMA_TO_LINEAR");
                     mat.EnableKeyword("LINEAR_TO_GAMMMA");
+                    break;
+                case EColorSpaceMode.GammaToLinear:
+                    mat.DisableKeyword("LINEAR_TO_GAMMMA");
+                    mat.EnableKeyword("GAMMA_TO_LINEAR");
                     break;
             }
         }

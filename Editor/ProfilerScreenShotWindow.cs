@@ -17,6 +17,12 @@ namespace UTJ.SS2Profiler.Editor
             Origin = 0,
             FitWindow = 1,
         }
+        private enum ColorSpaceMode : int
+        {
+            NoConvert = 0,
+            LinearToGamma = 1,
+            GammaToLinear = 2,
+        }
 
         [MenuItem("Tools/ProfilerScreenshot")]
         public static void Create()
@@ -30,17 +36,29 @@ namespace UTJ.SS2Profiler.Editor
         private bool isAutoReflesh = true;
         private bool isYFlip = false;
         private OutputMode outputMode;
+        private ColorSpaceMode colorSpaceMode;
+
+        private Material drawMaterial;
 
         private GUIContent[] outputModeSelect = new GUIContent[2]
         {
             new GUIContent("Original Size"),
             new GUIContent("Fit window Size"),
         };
-    
+
+        private GUIContent[] colorSpaceModeSelect = new GUIContent[3]
+        {
+            new GUIContent("No Convert"),
+            new GUIContent("Gamma->Linear"),
+            new GUIContent("Linear->Gamma")
+        };
+
         private Vector2Int outputSize = new Vector2Int();
 
         private void OnEnable()
         {
+            Shader shader = AssetDatabase.LoadAssetAtPath<Shader>("Packages/com.utj.screenshot2profiler/Editor/Shader/DebugColorSpace.shader");
+            this.drawMaterial = new Material(shader);
             Refresh(GetProfilerActiveFrame());
         }
         private void OnDisable()
@@ -125,6 +143,7 @@ namespace UTJ.SS2Profiler.Editor
             this.isYFlip = EditorGUILayout.Toggle("Flip Y", this.isYFlip);
             EditorGUILayout.LabelField("Size",GUILayout.Width(40));
             outputMode = (OutputMode)EditorGUILayout.Popup((int)outputMode, outputModeSelect);
+            colorSpaceMode = (ColorSpaceMode)EditorGUILayout.Popup((int)colorSpaceMode, colorSpaceModeSelect);
             EditorGUILayout.EndHorizontal();
             EditorGUILayout.Space();
             //drawTextureInfo.SetFlip(this.isYFlip);
@@ -139,15 +158,38 @@ namespace UTJ.SS2Profiler.Editor
                 {
                     rect = FitWindow(rect);
                 }
-
-                if (this.isYFlip)
-                {
-                    rect.y += rect.height;
-                    rect.height = -rect.height;
-                }
-                EditorGUI.DrawTextureTransparent(rect, drawTexture);
+                this.SetupMaterialKeyword();
+                EditorGUI.DrawPreviewTexture(rect, drawTexture,this.drawMaterial);
             }
         }
+        private void SetupMaterialKeyword()
+        {
+            const string FlipYKeyword = "FLIP_Y";
+            if (isYFlip)
+            {
+                this.drawMaterial.EnableKeyword(FlipYKeyword);
+            }
+            else
+            {
+                this.drawMaterial.DisableKeyword(FlipYKeyword);
+            }
+            switch (this.colorSpaceMode)
+            {
+                case ColorSpaceMode.NoConvert:
+                    this.drawMaterial.DisableKeyword("LINEAR_TO_GAMMMA");
+                    this.drawMaterial.DisableKeyword("GAMMA_TO_LINEAR");
+                    break;
+                case ColorSpaceMode.LinearToGamma:
+                    this.drawMaterial.DisableKeyword("GAMMA_TO_LINEAR");
+                    this.drawMaterial.EnableKeyword("LINEAR_TO_GAMMMA");
+                    break;
+                case ColorSpaceMode.GammaToLinear:
+                    this.drawMaterial.DisableKeyword("LINEAR_TO_GAMMMA");
+                    this.drawMaterial.EnableKeyword("GAMMA_TO_LINEAR");
+                    break;
+            }
+        }
+
         private Rect FitWindow(Rect r)
         {
             if( r.width == 0 || r.height == 0) { return r; }
