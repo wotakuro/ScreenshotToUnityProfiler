@@ -52,6 +52,9 @@ ScreenShotToProfiler.Instance.captureBehaviour = (target) => {
 
 ## 変更履歴
 <pre>
+version 1.4.0
+  カラースペース変換機能を追加
+
 version 1.3.0
   Unity 2021.2以降向けにProfilerのカスタムModuleを追加
 
