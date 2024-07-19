@@ -7,7 +7,6 @@ using Unity.Collections;
 using UnityEngine.LowLevel;
 using UnityEngine.PlayerLoop;
 using UnityEngine.Profiling;
-using PlasticGui.WorkspaceWindow.Merge;
 
 namespace UTJ.SS2Profiler
 {
