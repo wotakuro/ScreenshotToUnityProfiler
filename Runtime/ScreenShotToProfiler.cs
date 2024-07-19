@@ -76,27 +76,28 @@ namespace UTJ.SS2Profiler
                 {
                     continue;
                 }
-
-                if (args[i] == ArgForceOption)
-                {
-                    var optionVal = GetParameter(args[i]);
-                    if(optionVal == "enable")
-                    {
-                        forceLaunchOption = 1;
-                    }
-                    else if(optionVal == "disable")
-                    {
-                        forceLaunchOption = 0;
-                    }
-                }else if(args[i] == ArgForceResolution)
+                
+                if(args[i].StartsWith( ArgForceResolution) )
                 {
                     var resolutionVal = GetParameter(args[i]);
                     GetResolution(resolutionVal, out forceWidth, out forceHeight);
                 }
-                else if (args[i] == ArgForceFormat)
+                else if (args[i].StartsWith( ArgForceFormat) )
                 {
                     var formatParam = GetParameter(args[i]);
                     forceFormat = GetFormat(formatParam);
+                }
+                else if (args[i].StartsWith(ArgForceOption))
+                {
+                    var optionVal = GetParameter(args[i]);
+                    if (optionVal == "enable")
+                    {
+                        forceLaunchOption = 1;
+                    }
+                    else if (optionVal == "disable")
+                    {
+                        forceLaunchOption = 0;
+                    }
                 }
             }
             if(forceLaunchOption == 1)
