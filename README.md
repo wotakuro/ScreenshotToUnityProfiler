@@ -73,6 +73,12 @@ Option value list
 - "JPG_BUFFERRGBA" → RGBA 32bit JPEG compression setting
 - "JPG" / "JPG_BUFFERRGB565" → RGB565 JPEG compression settings
 
+###How to pass arguments
+Windows::Start from command line<br />
+    Example: Sample.exe --profilerSS=enable --profilerSS-resolution=640x480 --profilerSS-format=jpg <br />
+Android :: Start in Adb shell<br />
+    Example: adb shell am start -n com.utj.test[package name]/com.unity3d.player.UnityPlayerActivity[activity name] -e "unity --profilerSS=disable"<br />
+
 ## change
 <pre>
 version 1.5.0
