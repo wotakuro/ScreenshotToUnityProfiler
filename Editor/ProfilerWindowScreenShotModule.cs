@@ -194,7 +194,7 @@ namespace UTJ.SS2Profiler.Editor
                 if (originSize!=null)
                 {
                     originSize.text = currentTagInfo.width + "x" + currentTagInfo.height+" original:"+
-                        currentTagInfo.originWidth +"x"+currentTagInfo.originHeight;
+                        currentTagInfo.originWidth +"x"+currentTagInfo.originHeight + "::compress " + currentTagInfo.compress.ToString();
                 }
             }
         }

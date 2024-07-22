@@ -117,6 +117,7 @@ namespace UTJ.SS2Profiler
                     return (int)TextureCompress.PNG;
                 case "jpg_bufferrgb565":
                 case "jpg":
+                case "jpeg":
                     return (int)TextureCompress.JPG_BufferRGB565;
                 case "jpg_Bufferrgba":
                     return (int)TextureCompress.JPG_BufferRGBA;

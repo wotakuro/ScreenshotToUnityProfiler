@@ -146,7 +146,8 @@ namespace UTJ.SS2Profiler.Editor
             colorSpaceMode = (ColorSpaceMode)EditorGUILayout.Popup((int)colorSpaceMode, colorSpaceModeSelect);
             EditorGUILayout.EndHorizontal();
  
-            EditorGUILayout.LabelField( tagInfo.width +  "x"+ tagInfo.height + " original:" + tagInfo.originWidth + "x" + tagInfo.originHeight);
+            EditorGUILayout.LabelField( tagInfo.width +  "x"+ tagInfo.height + 
+                " original:" + tagInfo.originWidth + "x" + tagInfo.originHeight + "::compress " + tagInfo.compress.ToString());
             EditorGUILayout.Space();
             //drawTextureInfo.SetFlip(this.isYFlip);
 
