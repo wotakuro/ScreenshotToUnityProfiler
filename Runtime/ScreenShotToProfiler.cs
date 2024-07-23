@@ -63,7 +63,6 @@ namespace UTJ.SS2Profiler
         static int forceHeight = Invalid;
         static int forceFormat = Invalid;
 
-#endif
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void OnRuntimeInitialize()
         {
@@ -163,6 +162,7 @@ namespace UTJ.SS2Profiler
             }
             return arg.Substring(eqIndex+1).ToLower();
         }
+#endif
 
         public bool Initialize()
         {
