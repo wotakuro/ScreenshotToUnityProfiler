@@ -70,10 +70,8 @@ ScreenShotToProfiler.Instance.captureBehaviour = (target) => {
 - "JPG_BUFFERRGBA" → RGBA 32bit JPEG圧縮設定
 - "JPG" / "JPG_BUFFERRGB565" → RGB565 JPEG圧縮設定
 
-### 引数の渡し方
-Windows :: コマンドラインで起動<br />
+### オプション例
     例：Sample.exe --profilerSS=enable --profilerSS-resolution=640x480 --profilerSS-format=jpg <br />
-Android :: Adb shellで起動<br />
     例：adb shell am start -n com.utj.test[パッケージ名]/com.unity3d.player.UnityPlayerActivity[アクティビティ名] -e "unity --profilerSS=disable"<br />
 
 ## 変更履歴
