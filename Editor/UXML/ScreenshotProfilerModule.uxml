@@ -1,11 +1,12 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
     <ui:Label tabindex="-1" text="Screenshot Module" parse-escape-sequences="true" display-tooltip-when-elided="true" />
     <ui:VisualElement style="flex-grow: 1; flex-direction: row; margin-top: 3px; margin-left: 5px;">
-        <ui:DropdownField label="Size" index="-1" choices="System.Collections.Generic.List`1[System.String]" name="SizeMode" style="flex-wrap: nowrap; white-space: nowrap; -unity-text-align: upper-left;" />
+        <ui:DropdownField label="ScaleMode" index="-1" choices="System.Collections.Generic.List`1[System.String]" name="SizeMode" style="flex-wrap: nowrap; white-space: nowrap; -unity-text-align: upper-left;" />
         <ui:Toggle label="Flip Y" name="FlipYToggle" />
         <ui:DropdownField label="ColorSpace" index="-1" choices="System.Collections.Generic.List`1[System.String]" name="ColorSpaceMode" style="flex-wrap: nowrap; white-space: nowrap; -unity-text-align: upper-left;" />
     </ui:VisualElement>
-    <ui:VisualElement name="ImageField" style="flex-wrap: wrap; flex-direction: column; align-items: center; height: 100%; justify-content: flex-start;">
+    <ui:Label tabindex="-1" parse-escape-sequences="true" display-tooltip-when-elided="true" enable-rich-text="false" name="OriginalSize" text="size" style="margin-top: 1px; margin-left: 20px; margin-bottom: 2px;" />
+    <ui:VisualElement name="ImageField" style="flex-wrap: wrap; flex-direction: column; align-items: center; height: 100%; justify-content: flex-start; margin-top: 0; margin-left: 20px; margin-bottom: 10px;">
         <ui:IMGUIContainer name="TextureOutIMGUI" style="width: 100%; height: 100%;" />
     </ui:VisualElement>
 </ui:UXML>

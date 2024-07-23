@@ -53,8 +53,36 @@ ScreenShotToProfiler.Instance.captureBehaviour = (target) => {
 [Whole Sample Code](Sample~/SwitchSample.cs)<br />
 
 
+## command line options
+By adding command line options at runtime, you can forcefully change the behavior. (Disabled when running Editor)
+
+### Enable/disable with "--profilerSS"
+By adding the option "--profilerSS=enable", you can force the screenshot to be taken immediately after startup. <br />
+Screenshot can be forcibly disabled by adding the option "--profilerSS=disable"
+
+### Change resolution with "--profilerSS-resolution"
+You can now set the "width x height" of Texture, like "--profilerSS-resolution=256x192".
+
+### Format change with "--profilerSS-format"
+Texture can be compressed into Jpg by using "--profilerSS-format=JPG_BUFFERRGB565".
+
+Option value list
+- "NONE" → RGBA 32bit uncompressed setting
+- "RGB_565" → RGB565(16bit) uncompressed setting
+- "PNG" → RGBA 32Bit PNG compression setting
+- "JPG_BUFFERRGBA" → RGBA 32bit JPEG compression setting
+- "JPG" / "JPG_BUFFERRGB565" → RGB565 JPEG compression settings
+
+### Option Examples
+    Example: Sample.exe --profilerSS=enable --profilerSS-resolution=640x480 --profilerSS-format=jpg <br />
+    Example: adb shell am start -n com.utj.test[package name]/com.unity3d.player.UnityPlayerActivity[activity name] -e "unity --profilerSS=disable"<br />
+
 ## change
 <pre>
+version 1.5.0
+  Added command line option
+  Display resolution
+
 version 1.4.0
   Add ColorSpace convert.
 

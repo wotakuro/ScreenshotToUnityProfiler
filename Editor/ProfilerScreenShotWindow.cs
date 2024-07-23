@@ -37,6 +37,7 @@ namespace UTJ.SS2Profiler.Editor
         private bool isYFlip = false;
         private OutputMode outputMode;
         private ColorSpaceMode colorSpaceMode;
+        private TagInfo tagInfo;
 
         private Material drawMaterial;
 
@@ -75,7 +76,6 @@ namespace UTJ.SS2Profiler.Editor
             {
                 return;
             }
-            TagInfo tagInfo;
 
             if (ProfilerScreenShotEditorLogic.TryGetTagInfo(frameIdx, out tagInfo))
             {
@@ -145,6 +145,9 @@ namespace UTJ.SS2Profiler.Editor
             outputMode = (OutputMode)EditorGUILayout.Popup((int)outputMode, outputModeSelect);
             colorSpaceMode = (ColorSpaceMode)EditorGUILayout.Popup((int)colorSpaceMode, colorSpaceModeSelect);
             EditorGUILayout.EndHorizontal();
+ 
+            EditorGUILayout.LabelField( tagInfo.width +  "x"+ tagInfo.height + 
+                " original:" + tagInfo.originWidth + "x" + tagInfo.originHeight + "::compress " + tagInfo.compress.ToString());
             EditorGUILayout.Space();
             //drawTextureInfo.SetFlip(this.isYFlip);
 

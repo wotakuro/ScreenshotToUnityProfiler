@@ -51,6 +51,7 @@ namespace UTJ.SS2Profiler.Editor
     public class ScreenShotModuleDetailsViewController : ProfilerModuleViewController
     {
         private ProfilerWindowScreenShotModule screenShotModule;
+        private Label originSize;
         private Toggle yFlipToggle;
         private DropdownField sizeField;
         private DropdownField colorSpaceField;
@@ -115,6 +116,8 @@ namespace UTJ.SS2Profiler.Editor
 
             imageBody = ve.Q<IMGUIContainer>("TextureOutIMGUI");
             imageBody.onGUIHandler += OnGUITextureOut;
+
+            originSize = ve.Q<Label>("OriginalSize");
         }
 
         protected override void Dispose(bool disposing)
@@ -129,7 +132,7 @@ namespace UTJ.SS2Profiler.Editor
         private void OnGUITextureOut()
         {
             bool yFlip = this.yFlipToggle.value;
-            var rect = new Rect(10, 10, currentTagInfo.width, currentTagInfo.height);
+            var rect = new Rect(0, 0, currentTagInfo.width, currentTagInfo.height);
 
             screenShotModule.yFlip = yFlipToggle.value;
             screenShotModule.sizeIndex = sizeField.index;
@@ -138,7 +141,7 @@ namespace UTJ.SS2Profiler.Editor
             if (this.sizeField.index == (int)EOutputMode.FitWindow)
             {
                 rect = FitWindowSize(currentTagInfo,
-                    new Rect(10, 10,
+                    new Rect(0, 0,
                     this.imageBody.contentRect.width,
                     this.imageBody.contentRect.height));
             }
@@ -188,8 +191,12 @@ namespace UTJ.SS2Profiler.Editor
                     UnityEngine.Object.DestroyImmediate(screenshotTexture);
                 }
                 screenshotTexture = ProfilerScreenShotEditorLogic.GenerateTagTexture(currentTagInfo, idx);
+                if (originSize!=null)
+                {
+                    originSize.text = currentTagInfo.width + "x" + currentTagInfo.height+" original:"+
+                        currentTagInfo.originWidth +"x"+currentTagInfo.originHeight + "::compress " + currentTagInfo.compress.ToString();
+                }
             }
-
         }
 
 

@@ -50,8 +50,36 @@ ScreenShotToProfiler.Instance.captureBehaviour = (target) => {
 ```
 [サンプルC#コード](Sample~/SwitchSample.cs)<br />
 
+## コマンドラインオプション
+実行時にコマンドラインオプションを付けることで、強制的に挙動を変更する事が可能です。(Editor実行時は無効)
+
+### "--profilerSS"による有効・無効
+"--profilerSS=enable"という形でオプションを付ける事で、Screenshotを起動直後から強制的に取るようにします。<br />
+"--profilerSS=disable"という形でオプションを付ける事で、Screenshotを強制的に無効化できます
+
+### "--profilerSS-resolution"での解像度変更
+"--profilerSS-resolution=256x192"のように、Textureの"幅x高さ"を措定できるようになります。<br />
+
+### "--profilerSS-format"でのフォーマット変更 
+"--profilerSS-format=JPG_BUFFERRGB565"のようにすることで、TextureをJpg圧縮する事が可能です。<br />
+
+オプションの値一覧 
+- "NONE" → RGBA 32bit無圧縮設定
+- "RGB_565" → RGB565(16bit) 無圧縮設定
+- "PNG" → RGBA 32Bit PNG圧縮設定
+- "JPG_BUFFERRGBA" → RGBA 32bit JPEG圧縮設定
+- "JPG" / "JPG_BUFFERRGB565" → RGB565 JPEG圧縮設定
+
+### オプション例
+    例：Sample.exe --profilerSS=enable --profilerSS-resolution=640x480 --profilerSS-format=jpg <br />
+    例：adb shell am start -n com.utj.test[パッケージ名]/com.unity3d.player.UnityPlayerActivity[アクティビティ名] -e "unity --profilerSS=disable"<br />
+
 ## 変更履歴
 <pre>
+version 1.5.0
+　コマンドラインオプションを追加
+　解像度の表示
+
 version 1.4.0
   カラースペース変換機能を追加
 
