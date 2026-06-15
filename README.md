@@ -11,7 +11,7 @@ Embed Screenshot to Unity Profiler protocol.<br />
 ## requirement
 - 2019.4 or newer.<br />
 
-## reccomend
+## recommend
 - the platforms that supports System.supportsAsyncGPUReadback (Mobile vulkan or metal....)<br />
  Support sync readback from 1.1.0 , however it's very slow....<br />
 
